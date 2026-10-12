@@ -1,0 +1,51 @@
+sku,name,category,supplier,supplier_code,unit_cost_eur,retail_price_eur,avg_monthly_units
+RL-1001,Front light 800 lm USB-C,Lights,VeloParts GmbH,VP-10233,24.90,48.99,140
+RL-1002,Rear light 60 lm brake sensor,Lights,VeloParts GmbH,VP-10234,11.40,18.99,120
+RL-1003,Light set front+rear 400 lm,Lights,VeloParts GmbH,VP-10240,19.80,34.99,65
+RL-1004,Floor pump with gauge 11 bar,Pumps,VeloParts GmbH,VP-20011,21.50,36.99,45
+RL-1005,Mini pump aluminium,Pumps,VeloParts GmbH,VP-20015,9.20,18.99,80
+RL-1006,CO2 inflator + 2 cartridges,Pumps,VeloParts GmbH,VP-20019,12.60,24.99,30
+RL-1007,U-lock 16 mm with bracket,Locks,VeloParts GmbH,VP-30102,27.30,58.99,50
+RL-1008,Folding lock 85 cm,Locks,VeloParts GmbH,VP-30108,34.90,57.99,35
+RL-1009,Cable lock 180 cm,Locks,VeloParts GmbH,VP-30111,8.70,15.99,70
+RL-1010,Bottle cage aluminium,Bottles,VeloParts GmbH,VP-40050,4.10,6.99,110
+RL-1011,Water bottle 750 ml,Bottles,VeloParts GmbH,VP-40051,3.60,6.99,150
+RL-1012,Insulated bottle 500 ml,Bottles,VeloParts GmbH,VP-40060,11.90,22.99,40
+RL-1013,Multi-tool 16 functions,Tools,VeloParts GmbH,VP-50300,13.80,22.99,60
+RL-1014,Torque wrench 2-14 Nm,Tools,VeloParts GmbH,VP-50310,39.50,67.99,15
+RL-1015,Chain checker,Tools,VeloParts GmbH,VP-50320,5.40,10.99,25
+RL-1016,Saddle bag small,Bags,VeloParts GmbH,VP-60010,9.90,18.99,55
+RL-1017,Frame bag 1.5 L,Bags,VeloParts GmbH,VP-60020,16.20,27.99,30
+RL-1018,Phone mount handlebar,Accessories,VeloParts GmbH,VP-60030,8.30,15.99,95
+RL-1019,Bell aluminium,Accessories,VeloParts GmbH,VP-60040,2.20,4.99,85
+RL-1020,Kickstand adjustable,Accessories,VeloParts GmbH,VP-60050,10.40,16.99,35
+RL-1021,Handlebar 720 mm aluminium,Components,Ciclo Componenti Srl,CC-A118,18.50,38.99,22
+RL-1022,Stem 90 mm aluminium,Components,Ciclo Componenti Srl,CC-A121,14.20,28.99,25
+RL-1023,Seatpost 31.6 aluminium,Components,Ciclo Componenti Srl,CC-A130,13.90,24.99,20
+RL-1024,Flat pedals aluminium,Components,Ciclo Componenti Srl,CC-A140,22.80,38.99,40
+RL-1025,Pedals resin city,Components,Ciclo Componenti Srl,CC-P210,6.30,13.99,60
+RL-1026,Saddle comfort gel,Saddles,Ciclo Componenti Srl,CC-S305,16.90,30.99,45
+RL-1027,Saddle sport road,Saddles,Ciclo Componenti Srl,CC-S310,24.40,40.99,20
+RL-1028,Grips ergonomic,Components,Ciclo Componenti Srl,CC-G401,7.80,12.99,70
+RL-1029,Bar tape cork,Components,Ciclo Componenti Srl,CC-G405,6.90,14.99,35
+RL-1030,"Mudguard set 28""",Accessories,Ciclo Componenti Srl,CC-M510,14.60,28.99,30
+RL-1031,Rear rack aluminium,Accessories,Ciclo Componenti Srl,CC-M520,21.70,44.99,28
+RL-1032,Brake lever pair aluminium,Components,Ciclo Componenti Srl,CC-B610,11.30,22.99,18
+RL-1033,Chain 9 speed,Drivetrain,Ciclo Componenti Srl,CC-C700,12.40,23.99,50
+RL-1034,Chain 11 speed,Drivetrain,Ciclo Componenti Srl,CC-C705,21.90,48.99,30
+RL-1035,Cassette 11-32 9s,Drivetrain,Ciclo Componenti Srl,CC-C720,19.60,35.99,22
+RL-1036,Tyre 700x28 road,Tyres,TrailGear Ltd,TG-T1001,20.12,38.99,60
+RL-1037,Tyre 700x32 gravel,Tyres,TrailGear Ltd,TG-T1002,23.17,48.99,35
+RL-1038,Tyre 29x2.4 MTB,Tyres,TrailGear Ltd,TG-T1010,31.00,60.99,40
+RL-1039,Tyre 28x1.75 city,Tyres,TrailGear Ltd,TG-T1020,15.33,32.99,45
+RL-1040,Inner tube 700x25-32 presta,Tubes,TrailGear Ltd,TG-I2001,3.98,7.99,200
+RL-1041,Inner tube 29x2.1-2.4,Tubes,TrailGear Ltd,TG-I2005,4.80,9.99,120
+RL-1042,Tyre levers (set of 3),Tools,TrailGear Ltd,TG-K3001,1.11,1.99,90
+RL-1043,Puncture repair kit,Tools,TrailGear Ltd,TG-K3010,1.40,2.99,75
+RL-1044,Brake pads disc organic,Brakes,TrailGear Ltd,TG-B4001,2.81,4.99,85
+RL-1045,Brake pads rim road,Brakes,TrailGear Ltd,TG-B4005,2.57,4.99,40
+RL-1046,Chain lube wet 100 ml,Maintenance,TrailGear Ltd,TG-L5001,5.50,9.99,70
+RL-1047,Chain lube dry 100 ml,Maintenance,TrailGear Ltd,TG-L5002,5.50,9.99,55
+RL-1048,Bike cleaner 1 L,Maintenance,TrailGear Ltd,TG-L5010,6.90,12.99,50
+RL-1049,Degreaser 500 ml,Maintenance,TrailGear Ltd,TG-L5020,7.25,14.99,35
+RL-1050,Gloves summer,Apparel,TrailGear Ltd,TG-G6001,10.41,18.99,45
