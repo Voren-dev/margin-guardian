@@ -5,9 +5,6 @@ from conftest import all_findings, findings_for
 from mg.analyze import margin_pct, unit_cost_eur
 from mg.schemas import PriceLine, SourceRef
 
-surcharge_not_built = pytest.mark.xfail(reason="the footnote surcharge is not built yet")
-
-
 def line(price, currency="EUR", pack_size=1):
     return PriceLine(
         supplier="Test Supplier",
@@ -78,12 +75,14 @@ def test_pack_trap_is_an_increase_per_unit():
     assert pads[0].monthly_impact_eur > 0
 
 
-@surcharge_not_built
 def test_aluminium_surcharge_reaches_the_six_items():
     surcharged = [f for f in all_findings() if f.kind == "surcharge_note"]
     assert len(surcharged) == 6
     for finding in surcharged:
         assert finding.pct_change == pytest.approx(4.0, abs=0.01)
+        assert finding.new_unit_cost_eur == pytest.approx(finding.old_unit_cost_eur * 1.04, abs=0.001)
+        assert len(finding.sources) == 2  # the product row and the footnote
+        assert "2026-11-01" in finding.calc_trace
 
 
 def test_price_decrease_has_a_negative_impact():

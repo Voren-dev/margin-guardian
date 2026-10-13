@@ -7,9 +7,9 @@ The one rule that matters: costs are always compared PER UNIT and IN EUR.
 That is what catches a pack going from 4 to 2: the listed price drops,
 the cost of one piece goes up.
 
-Handled here: price_up, price_down, pack_change.
-Not handled yet: moq_change, new_product, discontinued (no cost to compare)
-and surcharge_note (comes from the notes of the document).
+Handled here: price_up, price_down, pack_change, and surcharge_note
+(a surcharge announced in a footnote, on rows whose listed price did not change).
+Not handled yet: moq_change, new_product, discontinued (no cost to compare).
 """
 from pathlib import Path
 
@@ -28,10 +28,11 @@ def analyze(
 ) -> list[Finding]:
     """Turn the matched changes into findings with their numbers.
 
-    notes and new_lines are not used yet: they are needed for the surcharge
-    announced in a footnote, which applies to rows whose price did not change.
+    notes and new_lines are needed for a surcharge announced in a footnote:
+    it applies to the marked rows of the new list, even if their price did not change.
     """
-    product_by_sku = {product.sku: product for product in load_catalog(catalog_path)}
+    products = load_catalog(catalog_path)
+    product_by_sku = {product.sku: product for product in products}
     findings = []
     for change in matched:
         if change.kind not in COST_KINDS:
@@ -39,6 +40,15 @@ def analyze(
         if change.sku is None:
             continue  # not linked to a catalog product: nothing to calculate on
         findings.append(_cost_finding(change, product_by_sku[change.sku]))
+
+    product_by_code = {product.supplier_code: product for product in products}
+    for note in notes:
+        surcharge = note.effect.get("surcharge_pct")
+        if not surcharge or not note.applies_to_marker:
+            continue  # the note does not announce a surcharge on marked rows
+        for line in new_lines:
+            if note.applies_to_marker in line.markers and line.supplier_code in product_by_code:
+                findings.append(_surcharge_finding(line, note, surcharge, product_by_code[line.supplier_code]))
     return findings
 
 
@@ -93,6 +103,45 @@ def _cost_finding(change: MatchedChange, product: Product) -> Finding:
         rationale=rationale,
         sources=[change.old.source, change.new.source],
         calc_trace=_trace(change, product, old_cost, new_cost, pct_change, old_margin, new_margin, units, monthly_impact),
+    )
+
+
+def _surcharge_finding(line: PriceLine, note: DocumentNote, surcharge_pct: float, product: Product) -> Finding:
+    """A surcharge written in a footnote: the listed price stays the same, the real cost goes up."""
+    listed_cost = unit_cost_eur(line)
+    real_cost = listed_cost * (1 + surcharge_pct / 100)
+    old_margin = margin_pct(product.retail_price_eur, listed_cost)
+    new_margin = margin_pct(product.retail_price_eur, real_cost)
+    units = expected_monthly_units(product)
+    monthly_impact = (real_cost - listed_cost) * units
+    since = f" from {note.valid_from}" if note.valid_from else ""
+    retail = product.retail_price_eur
+
+    return Finding(
+        id=f"{product.sku}-surcharge_note",
+        sku=product.sku,
+        kind="surcharge_note",
+        old_unit_cost_eur=round(listed_cost, 4),
+        new_unit_cost_eur=round(real_cost, 4),
+        pct_change=round(surcharge_pct, 2),
+        old_margin_pct=round(old_margin, 2),
+        new_margin_pct=round(new_margin, 2),
+        monthly_impact_eur=round(monthly_impact, 2),
+        rationale=(
+            f"{product.name}: the listed price did not change, but a footnote adds {surcharge_pct:g}%{since} "
+            f"to the rows marked {note.applies_to_marker}. Margin from {old_margin:.1f}% to {new_margin:.1f}%."
+        ),
+        sources=[line.source, note.source],
+        calc_trace="\n".join(
+            [
+                f"listed unit cost = price / pack size * rate = {line.price:.2f} {line.currency} / {line.pack_size} * {FX_TO_EUR[line.currency]} = {listed_cost:.4f} EUR",
+                f"real unit cost = listed * (1 + surcharge) = {listed_cost:.4f} * (1 + {surcharge_pct:g}/100) = {real_cost:.4f} EUR",
+                f"old margin = (retail - listed unit cost) / retail = ({retail:.2f} - {listed_cost:.4f}) / {retail:.2f} = {old_margin:.2f}%",
+                f"new margin = (retail - real unit cost) / retail = ({retail:.2f} - {real_cost:.4f}) / {retail:.2f} = {new_margin:.2f}%",
+                f"monthly impact = (real - listed) * units per month = ({real_cost:.4f} - {listed_cost:.4f}) * {units:g} = {monthly_impact:+.2f} EUR",
+                f"surcharge: {surcharge_pct:g}%{since}, written in a footnote for rows marked {note.applies_to_marker}; units per month: catalog average",
+            ]
+        ),
     )
 
 
