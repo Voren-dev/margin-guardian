@@ -40,7 +40,7 @@ def test_trailgear_pack_trap_is_an_increase_per_unit():
     assert pads[0].old_unit_cost_eur == pytest.approx(2.808)  # 9.60 GBP / 4 * 1.17
     assert pads[0].new_unit_cost_eur == pytest.approx(2.9835)  # 5.10 GBP / 2 * 1.17
     assert pads[0].new_margin_pct < pads[0].old_margin_pct
-    assert pads[0].monthly_impact_eur == pytest.approx(14.92)  # 0.1755 EUR * 85 units
+    assert pads[0].monthly_impact_eur == pytest.approx(0.1755 * 86.0, abs=0.01)  # 86.0 units: last 12 months
 
 
 def test_trailgear_tyres_go_up_five_percent():

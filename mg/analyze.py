@@ -14,7 +14,8 @@ Not handled yet: moq_change, new_product, discontinued (no cost to compare).
 from pathlib import Path
 
 from mg.catalog import Product, load_catalog
-from mg.config import CATALOG_PATH, FX_NOTE, FX_TO_EUR
+from mg.config import CATALOG_PATH, FX_NOTE, FX_TO_EUR, SALES_HISTORY_PATH
+from mg.forecast import Sale, load_sales, monthly_units
 from mg.schemas import DocumentNote, Finding, MatchedChange, PriceLine
 
 COST_KINDS = ("price_up", "price_down", "pack_change")
@@ -25,6 +26,7 @@ def analyze(
     notes: list[DocumentNote],
     new_lines: list[PriceLine],
     catalog_path: Path | str = CATALOG_PATH,
+    sales_path: Path | str = SALES_HISTORY_PATH,
 ) -> list[Finding]:
     """Turn the matched changes into findings with their numbers.
 
@@ -32,6 +34,7 @@ def analyze(
     it applies to the marked rows of the new list, even if their price did not change.
     """
     products = load_catalog(catalog_path)
+    sales = load_sales(sales_path)
     product_by_sku = {product.sku: product for product in products}
     findings = []
     for change in matched:
@@ -39,7 +42,7 @@ def analyze(
             continue
         if change.sku is None:
             continue  # not linked to a catalog product: nothing to calculate on
-        findings.append(_cost_finding(change, product_by_sku[change.sku]))
+        findings.append(_cost_finding(change, product_by_sku[change.sku], sales))
 
     product_by_code = {product.supplier_code: product for product in products}
     for note in notes:
@@ -48,7 +51,7 @@ def analyze(
             continue  # the note does not announce a surcharge on marked rows
         for line in new_lines:
             if note.applies_to_marker in line.markers and line.supplier_code in product_by_code:
-                findings.append(_surcharge_finding(line, note, surcharge, product_by_code[line.supplier_code]))
+                findings.append(_surcharge_finding(line, note, surcharge, product_by_code[line.supplier_code], sales))
     return findings
 
 
@@ -64,22 +67,26 @@ def margin_pct(retail_price: float, unit_cost: float) -> float:
     return (retail_price - unit_cost) / retail_price * 100
 
 
-def expected_monthly_units(product: Product) -> float:
-    """How many pieces the shop sells in a month.
+def expected_monthly_units(product: Product, sales: list[Sale]) -> float:
+    """How many pieces the shop is expected to sell in a month.
 
-    For now this is the catalog average. The forecast from the sales history
-    (seasonality, price elasticity) will replace this one function.
+    The average of the last 12 months of sales (a whole season). A product with
+    no sales history falls back to the catalog average.
     """
-    return product.avg_monthly_units
+    from_history = monthly_units(product.sku, sales)
+    return from_history if from_history is not None else product.avg_monthly_units
 
 
-def _cost_finding(change: MatchedChange, product: Product) -> Finding:
+UNITS_NOTE = "units per month: average of the last 12 months of sales"
+
+
+def _cost_finding(change: MatchedChange, product: Product, sales: list[Sale]) -> Finding:
     old_cost = unit_cost_eur(change.old)
     new_cost = unit_cost_eur(change.new)
     pct_change = (new_cost - old_cost) / old_cost * 100
     old_margin = margin_pct(product.retail_price_eur, old_cost)
     new_margin = margin_pct(product.retail_price_eur, new_cost)
-    units = expected_monthly_units(product)
+    units = expected_monthly_units(product, sales)
     monthly_impact = (new_cost - old_cost) * units
 
     direction = "up" if new_cost > old_cost else "down"
@@ -106,13 +113,15 @@ def _cost_finding(change: MatchedChange, product: Product) -> Finding:
     )
 
 
-def _surcharge_finding(line: PriceLine, note: DocumentNote, surcharge_pct: float, product: Product) -> Finding:
+def _surcharge_finding(
+    line: PriceLine, note: DocumentNote, surcharge_pct: float, product: Product, sales: list[Sale]
+) -> Finding:
     """A surcharge written in a footnote: the listed price stays the same, the real cost goes up."""
     listed_cost = unit_cost_eur(line)
     real_cost = listed_cost * (1 + surcharge_pct / 100)
     old_margin = margin_pct(product.retail_price_eur, listed_cost)
     new_margin = margin_pct(product.retail_price_eur, real_cost)
-    units = expected_monthly_units(product)
+    units = expected_monthly_units(product, sales)
     monthly_impact = (real_cost - listed_cost) * units
     since = f" from {note.valid_from}" if note.valid_from else ""
     retail = product.retail_price_eur
@@ -138,8 +147,8 @@ def _surcharge_finding(line: PriceLine, note: DocumentNote, surcharge_pct: float
                 f"real unit cost = listed * (1 + surcharge) = {listed_cost:.4f} * (1 + {surcharge_pct:g}/100) = {real_cost:.4f} EUR",
                 f"old margin = (retail - listed unit cost) / retail = ({retail:.2f} - {listed_cost:.4f}) / {retail:.2f} = {old_margin:.2f}%",
                 f"new margin = (retail - real unit cost) / retail = ({retail:.2f} - {real_cost:.4f}) / {retail:.2f} = {new_margin:.2f}%",
-                f"monthly impact = (real - listed) * units per month = ({real_cost:.4f} - {listed_cost:.4f}) * {units:g} = {monthly_impact:+.2f} EUR",
-                f"surcharge: {surcharge_pct:g}%{since}, written in a footnote for rows marked {note.applies_to_marker}; units per month: catalog average",
+                f"monthly impact = (real - listed) * units per month = ({real_cost:.4f} - {listed_cost:.4f}) * {units:.1f} = {monthly_impact:+.2f} EUR",
+                f"surcharge: {surcharge_pct:g}%{since}, written in a footnote for rows marked {note.applies_to_marker}; {UNITS_NOTE}",
             ]
         ),
     )
@@ -157,7 +166,7 @@ def _trace(change, product, old_cost, new_cost, pct_change, old_margin, new_marg
             f"change = (new - old) / old = ({new_cost:.4f} - {old_cost:.4f}) / {old_cost:.4f} = {pct_change:+.2f}%",
             f"old margin = (retail - old unit cost) / retail = ({retail:.2f} - {old_cost:.4f}) / {retail:.2f} = {old_margin:.2f}%",
             f"new margin = (retail - new unit cost) / retail = ({retail:.2f} - {new_cost:.4f}) / {retail:.2f} = {new_margin:.2f}%",
-            f"monthly impact = (new - old) * units per month = ({new_cost:.4f} - {old_cost:.4f}) * {units:g} = {monthly_impact:+.2f} EUR",
-            f"exchange rate: {FX_NOTE}; units per month: catalog average",
+            f"monthly impact = (new - old) * units per month = ({new_cost:.4f} - {old_cost:.4f}) * {units:.1f} = {monthly_impact:+.2f} EUR",
+            f"exchange rate: {FX_NOTE}; {UNITS_NOTE}",
         ]
     )

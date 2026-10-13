@@ -7,6 +7,9 @@ ROOT = Path(__file__).resolve().parent.parent
 # The shop's catalog: SKU, supplier code, unit cost, retail price, average monthly units.
 CATALOG_PATH = ROOT / "data" / "demo" / "catalog.csv"
 
+# The shop's sales: one row per product and month (units sold, average selling price).
+SALES_HISTORY_PATH = ROOT / "data" / "demo" / "sales_history.csv"
+
 # Exchange rates to EUR. These are fixed DEMO rates, not market rates:
 # the demo data was built with 1 GBP = 1.17 EUR (see data/demo/README.md).
 # With real data this becomes a dated rate from a named source.
