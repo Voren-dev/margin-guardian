@@ -10,6 +10,13 @@ CATALOG_PATH = ROOT / "data" / "demo" / "catalog.csv"
 # The shop's sales: one row per product and month (units sold, average selling price).
 SALES_HISTORY_PATH = ROOT / "data" / "demo" / "sales_history.csv"
 
+# Prices of the same products at competitors: SKU, competitor, price, date checked.
+COMPETITOR_PRICES_PATH = ROOT / "data" / "demo" / "competitor_prices.csv"
+
+# The "negotiate" move assumes the supplier gives up this share of the increase.
+# It is an assumption, not an estimate: nothing in the data says how a negotiation ends.
+NEGOTIATION_SHARE = 0.5
+
 # Exchange rates to EUR. These are fixed DEMO rates, not market rates:
 # the demo data was built with 1 GBP = 1.17 EUR (see data/demo/README.md).
 # With real data this becomes a dated rate from a named source.
