@@ -138,14 +138,14 @@ def read_live(path: Path) -> dict:
     counter = config.LIVE_COUNTER_DIR / f"{date.today().isoformat()}.count"
     counter.parent.mkdir(parents=True, exist_ok=True)
     counter.write_text(str(config.LIVE_READS_PER_DAY - live_reads_left() + 1))
-    return extract_and_check(path)
+    return extract_and_check(path, attempts=1)  # one try only: a visitor should not wait for retries
 
 
-def extract_and_check(path: Path) -> dict:
-    """Asks Evolus for the data until the answer agrees with the PDF, at most MAX_ATTEMPTS times."""
+def extract_and_check(path: Path, attempts: int = MAX_ATTEMPTS) -> dict:
+    """Asks Evolus for the data until the answer agrees with the PDF, at most `attempts` times."""
     text_rows = pdf_text_rows(path)
     problems = []
-    for _ in range(MAX_ATTEMPTS):
+    for _ in range(attempts):
         try:
             data = call_evolus(path)
         except ExtractionError as error:
@@ -154,7 +154,7 @@ def extract_and_check(path: Path) -> dict:
         problems = check_against_pdf(data, text_rows)
         if not problems:
             return data
-    raise ExtractionError(f"{path.name} refused after {MAX_ATTEMPTS} attempts: " + "; ".join(problems))
+    raise ExtractionError(f"{path.name} refused after {attempts} attempt(s): " + "; ".join(problems))
 
 
 def pdf_text_rows(path: Path) -> list[tuple[int, int, str]]:

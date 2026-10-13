@@ -13,7 +13,7 @@ def show_live_reading(path: Path, source):
         st.write(
             "What you see above was read on 13 October 2026. Press the button and the open model "
             "on AMD servers reads the PDF again now, through the Evolus extractor. "
-            "Then code checks every price against the PDF. It takes about a minute."
+            "Then code checks every price against the PDF. It takes one to three minutes."
         )
         if not keys_are_set():
             st.caption("Live reading is switched off on this copy of the app (no API keys).")
@@ -25,7 +25,7 @@ def show_live_reading(path: Path, source):
             return
 
         started = time.time()
-        with st.spinner("The model on AMD is reading the PDF..."):
+        with st.spinner("The model on AMD is reading the PDF... this takes one to three minutes."):
             try:
                 data = read_live(path)
             except ExtractionError as error:
