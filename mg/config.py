@@ -34,3 +34,15 @@ EVOLUS_PRICE_LIST_FORMAT_ID = os.environ.get("EVOLUS_PRICE_LIST_FORMAT_ID", "a20
 
 # Saved extractor answers, one per PDF. Reused while the PDF is unchanged.
 EXTRACT_RESULTS_DIR = ROOT / "data" / "demo" / "results" / "extract"
+
+# The shop that sends the emails, and where each supplier is written to.
+# Demo values: ".example" is a reserved domain, no message can reach anyone.
+SHOP_NAME = "Rideline Cycles"
+SUPPLIER_EMAILS = {
+    "VeloParts GmbH": "sales@veloparts.example",
+    "Ciclo Componenti Srl": "commerciale@ciclocomponenti.example",
+    "TrailGear Ltd": "trade@trailgear.example",
+}
+
+# Saved email texts, one per supplier, so the demo does not call Evolus again.
+EMAIL_RESULTS_DIR = ROOT / "data" / "demo" / "results" / "email"

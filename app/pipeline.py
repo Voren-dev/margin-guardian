@@ -17,7 +17,9 @@ from mg.catalog import load_catalog  # noqa: E402
 from mg.config import CATALOG_PATH  # noqa: E402
 from mg.extract import extract_price_list  # noqa: E402
 from mg.match import diff_price_lists, match_to_catalog  # noqa: E402
+from mg.forecast import load_sales, monthly_units  # noqa: E402
 from mg.moves import build_moves  # noqa: E402
+from mg.negotiate import draft_email  # noqa: E402
 from mg.review import audit  # noqa: E402
 
 SUPPLIERS_DIR = ROOT / "data" / "demo" / "suppliers"
@@ -78,3 +80,14 @@ def label(finding) -> str:
     if finding.kind == "surcharge_note":
         return f"HIDDEN · footnote +{finding.pct_change:g}%"
     return "price up" if finding.kind == "price_up" else "price down"
+
+
+@st.cache_data(show_spinner="Writing the email...")
+def supplier_email(supplier: str):
+    """The email to one supplier about all its increases."""
+    demo = load_demo()
+    products = demo["products"]
+    increases = [f for f in demo["findings"] if f.id in demo["moves"] and products[f.sku].supplier == supplier]
+    sales = load_sales()
+    units = {finding.sku: monthly_units(finding.sku, sales) for finding in increases}
+    return draft_email(supplier, increases, products, units)

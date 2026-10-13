@@ -1,0 +1,6 @@
+{
+  "supplier": "VeloParts GmbH",
+  "written_at": "2026-10-13T16:18:41+00:00",
+  "written_by": "Evolus AI tool 'email' (mode write, tone assertive)",
+  "template": "Subject: Request to Reconsider New Pricing\n\nDear VeloParts GmbH Team,\n\nWe have reviewed your new price list and noted the increases affecting the products below:\n\n[PRODUCT_LIST]\n\nAs a small online bike shop, we value our partnership and purchase consistently from VeloParts. Our annual purchasing volume is:\n\n[YEARLY_UNITS]\n\nThe resulting additional yearly cost would be:\n\n[YEARLY_COST]\n\nThese increases would significantly affect our margins and limit our ability to continue offering your products competitively. We therefore ask you to reconsider the adjustments and review the following counter-proposal:\n\n[PROPOSAL]\n\nWe hope you can accommodate this request and maintain terms that support a long-term relationship.\n\nKind regards,\n\n[SENDER]"
+}

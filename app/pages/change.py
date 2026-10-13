@@ -56,6 +56,12 @@ for column, kind in zip(st.columns(3), ("absorb", "negotiate", "reprice")):
             st.caption(f"{move.units_delta:+.0f} units a year")
 
 st.write("")
+if st.button(f"Write the email to {product.supplier}", type="primary"):
+    st.session_state["supplier"] = product.supplier
+    st.switch_page("pages/email.py")
+st.caption("It prepares the text. Nothing is sent: you send it yourself.")
+
+st.write("")
 st.markdown("##### How each move is calculated")
 for tab, kind in zip(st.tabs([titles[kind] for kind in kinds]), kinds):
     with tab:

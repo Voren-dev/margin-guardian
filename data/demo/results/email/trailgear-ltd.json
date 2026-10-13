@@ -1,0 +1,6 @@
+{
+  "supplier": "TrailGear Ltd",
+  "written_at": "2026-10-13T16:18:49+00:00",
+  "written_by": "Evolus AI tool 'email' (mode write, tone assertive)",
+  "template": "Subject: Request to Review New Price Increases\n\nDear TrailGear Ltd. team,\n\nWe have reviewed your new price list and noted the increases affecting the following products:\n\n[PRODUCT_LIST]\n\nAs a small online bike shop, we purchase [YEARLY_UNITS] from you annually. The proposed changes would result in an additional yearly cost of [YEARLY_COST], which would significantly affect our margins and competitiveness.\n\nWe value our relationship with TrailGear Ltd. and would appreciate your reconsideration of these increases. We ask you to review the pricing and consider the following counter-proposal:\n\n[PROPOSAL]\n\nWe hope you can accommodate this request and look forward to your prompt response.\n\nKind regards,\n\n[SENDER]"
+}

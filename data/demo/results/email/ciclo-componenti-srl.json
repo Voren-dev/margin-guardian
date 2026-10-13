@@ -1,0 +1,6 @@
+{
+  "supplier": "Ciclo Componenti Srl",
+  "written_at": "2026-10-13T16:18:45+00:00",
+  "written_by": "Evolus AI tool 'email' (mode write, tone assertive)",
+  "template": "Subject: Request to Review New Price Increases\n\nDear Ciclo Componenti Srl,\n\nWe have reviewed your new price list and noted significant increases affecting several products:\n\n[PRODUCT_LIST]\n\nAs a small online bike shop, these changes would materially affect our purchasing costs and ability to remain competitive. We currently purchase the following annual volume from you:\n\n[YEARLY_UNITS]\n\nThe resulting additional annual cost would be:\n\n[YEARLY_COST]\n\nWe value our relationship and would prefer to continue sourcing these products from you. However, we ask you to reconsider the increases and review our proposed adjustment:\n\n[PROPOSAL]\n\nPlease confirm whether you can accept this proposal or provide a revised offer that meaningfully limits the impact of the new pricing.\n\nKind regards,  \n[SENDER]"
+}
