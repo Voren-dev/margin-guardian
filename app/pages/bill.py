@@ -41,7 +41,7 @@ for finding in findings:
         tag.markdown(label(finding))
     change.markdown(f"{finding.pct_change:+.1f}%")
     cost.markdown(f"{euro(finding.monthly_impact_eur, sign=True)}/m".replace("+", "&#43;"))
-    if button.button("Why →", key=finding.id, use_container_width=True):
+    if button.button("Details", key=finding.id, use_container_width=True):
         st.session_state["finding_id"] = finding.id
         st.switch_page("pages/change.py")
 

@@ -3,6 +3,7 @@ import streamlit as st
 
 from pipeline import HIDDEN_KINDS, document_path, euro, label, load_demo
 from source_view import show_source
+from trace_view import show_trace
 
 demo = load_demo()
 by_id = {finding.id: finding for finding in demo["findings"]}
@@ -27,7 +28,7 @@ for source, caption in zip(reversed(finding.sources), captions):
 
 st.divider()
 st.markdown("##### How it is calculated")
-st.code(finding.calc_trace, language=None, wrap_lines=True)
+show_trace(finding.calc_trace)
 verdict = demo["verdicts"][finding.id]
 st.caption(f"✓ Checked by the reviewer: {verdict.reason}.")
 
@@ -41,6 +42,8 @@ if not moves:
 st.markdown("##### Your three moves")
 st.caption("Each one compared with the yearly profit on this product before the new price list.")
 titles = {"absorb": "Absorb", "negotiate": "Negotiate", "reprice": "Reprice"}
+kinds = [kind for kind in ("absorb", "negotiate", "reprice") if kind in moves]
+
 for column, kind in zip(st.columns(3), ("absorb", "negotiate", "reprice")):
     move = moves.get(kind)
     with column:
@@ -48,9 +51,13 @@ for column, kind in zip(st.columns(3), ("absorb", "negotiate", "reprice")):
             st.metric(titles[kind], "n/a")
             st.caption("Not enough past price changes to estimate how sales react.")
             continue
-        st.metric(titles[kind], euro(move.yearly_impact_eur, sign=True), help="per year")
+        st.metric(f"{titles[kind]} · per year", euro(move.yearly_impact_eur, sign=True))
         if move.units_delta:
             st.caption(f"{move.units_delta:+.0f} units a year")
-        st.caption(move.assumptions)
-        with st.expander("How it is calculated"):
-            st.code(move.calc_trace, language=None, wrap_lines=True)
+
+st.write("")
+st.markdown("##### How each move is calculated")
+for tab, kind in zip(st.tabs([titles[kind] for kind in kinds]), kinds):
+    with tab:
+        st.write(moves[kind].assumptions)
+        show_trace(moves[kind].calc_trace)
