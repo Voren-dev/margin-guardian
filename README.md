@@ -15,6 +15,8 @@ Work in progress.
 | `AMD_TOKENFACTORY_API_KEY` | Team API key from AMD Token Factory |
 | `AMD_TOKENFACTORY_BASE_URL` | OpenAI-compatible base URL of the shared model endpoints: `https://developer.amd.com.cn/radeon/api/v1` |
 | `AMD_MODEL` | Model served on AMD GPUs used by the main agent, for example `Gemma-4-31B-IT` |
+| `EVOLUS_API_KEY` | API key of the Evolus workspace (API keys page) |
+| `EVOLUS_APPLICATION_ID` | Evolus space ID, shown on the same page; sent as `X-Application-Id` |
 
 ## Demo data
 
