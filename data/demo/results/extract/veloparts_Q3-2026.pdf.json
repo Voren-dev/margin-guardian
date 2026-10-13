@@ -1,0 +1,241 @@
+{
+  "document": "veloparts_Q3-2026.pdf",
+  "sha256": "06bf29c08e2f50fdc0c39c13aabd4e36e9bb1e2e150041b9daf417479d0722b4",
+  "extracted_at": "2026-10-13T13:09:40+00:00",
+  "extracted_by": "Evolus document extractor on AMD Token Factory",
+  "data": {
+    "supplier": "",
+    "currency": "EUR",
+    "valid_from": "",
+    "lines": [
+      {
+        "supplier_code": "VP-10233",
+        "description": "LED Frontleuchte 800lm, USB-C, StVZO",
+        "price": 24.9,
+        "pack_size": 1,
+        "min_order_qty": 1,
+        "marker": "",
+        "page": 1,
+        "row": 9,
+        "raw_text": "VP-10233  LED Frontleuchte 800lm, USB-C, StVZO  Lights  1  24.90"
+      },
+      {
+        "supplier_code": "VP-10234",
+        "description": "LED Rücklicht 60lm mit Bremssensor",
+        "price": 11.4,
+        "pack_size": 1,
+        "min_order_qty": 1,
+        "marker": "",
+        "page": 1,
+        "row": 11,
+        "raw_text": "VP-10234  LED Rücklicht 60lm mit Bremssensor  Lights  1  11.40"
+      },
+      {
+        "supplier_code": "VP-10240",
+        "description": "Beleuchtungsset 400lm vorne/hinten",
+        "price": 19.8,
+        "pack_size": 1,
+        "min_order_qty": 1,
+        "marker": "",
+        "page": 1,
+        "row": 13,
+        "raw_text": "VP-10240  Beleuchtungsset 400lm vorne/hinten  Lights  1  19.80"
+      },
+      {
+        "supplier_code": "VP-20011",
+        "description": "Standpumpe mit Manometer 11 bar",
+        "price": 21.5,
+        "pack_size": 1,
+        "min_order_qty": 1,
+        "marker": "",
+        "page": 1,
+        "row": 15,
+        "raw_text": "VP-20011  Standpumpe mit Manometer 11 bar  Pumps  1  21.50"
+      },
+      {
+        "supplier_code": "VP-20015",
+        "description": "Minipumpe Aluminium, Presta/Schrader",
+        "price": 9.2,
+        "pack_size": 1,
+        "min_order_qty": 1,
+        "marker": "",
+        "page": 1,
+        "row": 17,
+        "raw_text": "VP-20015  Minipumpe Aluminium, Presta/Schrader  Pumps  1  9.20"
+      },
+      {
+        "supplier_code": "VP-20019",
+        "description": "CO2-Inflator inkl. 2 Kartuschen 16g",
+        "price": 12.6,
+        "pack_size": 1,
+        "min_order_qty": 1,
+        "marker": "",
+        "page": 1,
+        "row": 19,
+        "raw_text": "VP-20019  CO2-Inflator inkl. 2 Kartuschen 16g  Pumps  1  12.60"
+      },
+      {
+        "supplier_code": "VP-30102",
+        "description": "Bügelschloss 16mm mit Halter",
+        "price": 27.3,
+        "pack_size": 1,
+        "min_order_qty": 1,
+        "marker": "",
+        "page": 1,
+        "row": 21,
+        "raw_text": "VP-30102  Bügelschloss 16mm mit Halter  Locks  1  27.30"
+      },
+      {
+        "supplier_code": "VP-30108",
+        "description": "Faltschloss 85cm, Sicherheitsstufe 10",
+        "price": 34.9,
+        "pack_size": 1,
+        "min_order_qty": 1,
+        "marker": "",
+        "page": 1,
+        "row": 23,
+        "raw_text": "VP-30108  Faltschloss 85cm, Sicherheitsstufe 10  Locks  1  34.90"
+      },
+      {
+        "supplier_code": "VP-30111",
+        "description": "Kabelschloss 180cm mit Zahlencode",
+        "price": 8.7,
+        "pack_size": 1,
+        "min_order_qty": 1,
+        "marker": "",
+        "page": 1,
+        "row": 25,
+        "raw_text": "VP-30111  Kabelschloss 180cm mit Zahlencode  Locks  1  8.70"
+      },
+      {
+        "supplier_code": "VP-40050",
+        "description": "Flaschenhalter Aluminium, schwarz",
+        "price": 4.1,
+        "pack_size": 1,
+        "min_order_qty": 1,
+        "marker": "",
+        "page": 1,
+        "row": 27,
+        "raw_text": "VP-40050  Flaschenhalter Aluminium, schwarz  Bottles  1  4.10"
+      },
+      {
+        "supplier_code": "VP-40051",
+        "description": "Trinkflasche 750ml BPA-frei",
+        "price": 3.6,
+        "pack_size": 1,
+        "min_order_qty": 1,
+        "marker": "",
+        "page": 1,
+        "row": 29,
+        "raw_text": "VP-40051  Trinkflasche 750ml BPA-frei  Bottles  1  3.60"
+      },
+      {
+        "supplier_code": "VP-40060",
+        "description": "Isolierflasche 500ml Edelstahl",
+        "price": 11.9,
+        "pack_size": 1,
+        "min_order_qty": 1,
+        "marker": "",
+        "page": 1,
+        "row": 31,
+        "raw_text": "VP-40060  Isolierflasche 500ml Edelstahl  Bottles  1  11.90"
+      },
+      {
+        "supplier_code": "VP-50300",
+        "description": "Multitool 16 Funktionen mit Kettennieter",
+        "price": 13.8,
+        "pack_size": 1,
+        "min_order_qty": 1,
+        "marker": "",
+        "page": 1,
+        "row": 33,
+        "raw_text": "VP-50300  Multitool 16 Funktionen mit Kettennieter  Tools  1  13.80"
+      },
+      {
+        "supplier_code": "VP-50310",
+        "description": "Drehmomentschlüssel 2-14 Nm, Set",
+        "price": 39.5,
+        "pack_size": 1,
+        "min_order_qty": 1,
+        "marker": "",
+        "page": 1,
+        "row": 35,
+        "raw_text": "VP-50310  Drehmomentschlüssel 2-14 Nm, Set  Tools  1  39.50"
+      },
+      {
+        "supplier_code": "VP-50320",
+        "description": "Kettenverschleißlehre",
+        "price": 5.4,
+        "pack_size": 1,
+        "min_order_qty": 1,
+        "marker": "",
+        "page": 1,
+        "row": 37,
+        "raw_text": "VP-50320  Kettenverschleißlehre  Tools  1  5.40"
+      },
+      {
+        "supplier_code": "VP-60010",
+        "description": "Satteltasche S, 0,6 L",
+        "price": 9.9,
+        "pack_size": 1,
+        "min_order_qty": 1,
+        "marker": "",
+        "page": 1,
+        "row": 39,
+        "raw_text": "VP-60010  Satteltasche S, 0,6 L  Bags  1  9.90"
+      },
+      {
+        "supplier_code": "VP-60020",
+        "description": "Rahmentasche 1,5 L wasserabweisend",
+        "price": 16.2,
+        "pack_size": 1,
+        "min_order_qty": 1,
+        "marker": "",
+        "page": 1,
+        "row": 41,
+        "raw_text": "VP-60020  Rahmentasche 1,5 L wasserabweisend  Bags  1  16.20"
+      },
+      {
+        "supplier_code": "VP-60030",
+        "description": "Smartphone-Halter Lenker, 360°",
+        "price": 8.3,
+        "pack_size": 1,
+        "min_order_qty": 1,
+        "marker": "",
+        "page": 1,
+        "row": 43,
+        "raw_text": "VP-60030  Smartphone-Halter Lenker, 360°  Accessories  1  8.30"
+      },
+      {
+        "supplier_code": "VP-60040",
+        "description": "Fahrradklingel Aluminium",
+        "price": 2.2,
+        "pack_size": 1,
+        "min_order_qty": 1,
+        "marker": "",
+        "page": 1,
+        "row": 45,
+        "raw_text": "VP-60040  Fahrradklingel Aluminium  Accessories  1  2.20"
+      },
+      {
+        "supplier_code": "VP-60050",
+        "description": "Seitenständer verstellbar 24-29\"",
+        "price": 10.4,
+        "pack_size": 1,
+        "min_order_qty": 1,
+        "marker": "",
+        "page": 1,
+        "row": 47,
+        "raw_text": "VP-60050  Seitenständer verstellbar 24-29\"  Accessories  1  10.40"
+      }
+    ],
+    "notes": [
+      {
+        "text": "Preise netto zzgl. MwSt., ab Lager Stuttgart. Mindestbestellwert 250 EUR.",
+        "applies_to_marker": "",
+        "surcharge_pct": null,
+        "valid_from": null
+      }
+    ]
+  }
+}

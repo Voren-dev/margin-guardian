@@ -5,7 +5,6 @@ from conftest import all_findings, findings_for
 from mg.analyze import margin_pct, unit_cost_eur
 from mg.schemas import PriceLine, SourceRef
 
-pdf_not_built = pytest.mark.xfail(reason="the PDF reader is not built yet")
 surcharge_not_built = pytest.mark.xfail(reason="the footnote surcharge is not built yet")
 
 
@@ -62,7 +61,6 @@ def test_trailgear_findings_show_their_sources_and_their_maths():
         assert "monthly impact" in finding.calc_trace
 
 
-@pdf_not_built
 def test_top_seller_increase_is_first_by_impact():
     findings = sorted(all_findings(), key=lambda f: f.monthly_impact_eur, reverse=True)
     top = findings[0]
@@ -72,7 +70,6 @@ def test_top_seller_increase_is_first_by_impact():
     assert top.new_unit_cost_eur == 26.39
 
 
-@pdf_not_built
 def test_pack_trap_is_an_increase_per_unit():
     pads = [f for f in all_findings() if f.sku == "RL-1044"]  # TG-B4001
     assert len(pads) == 1
@@ -89,13 +86,11 @@ def test_aluminium_surcharge_reaches_the_six_items():
         assert finding.pct_change == pytest.approx(4.0, abs=0.01)
 
 
-@pdf_not_built
 def test_price_decrease_has_a_negative_impact():
     wrench = [f for f in all_findings() if f.sku == "RL-1014" or f.kind == "price_down"]
     assert any(f.monthly_impact_eur < 0 for f in wrench)
 
 
-@pdf_not_built
 def test_every_finding_shows_its_sources_and_its_maths():
     for finding in all_findings():
         assert finding.sources

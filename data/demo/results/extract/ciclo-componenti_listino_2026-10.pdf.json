@@ -1,0 +1,192 @@
+{
+  "document": "ciclo-componenti_listino_2026-10.pdf",
+  "sha256": "83b0621257b81437aa043e6e4783bbfb4dec316f9277869befdc24f9b1d72461",
+  "extracted_at": "2026-10-13T13:09:45+00:00",
+  "extracted_by": "Evolus document extractor on AMD Token Factory",
+  "data": {
+    "supplier": "CICLO COMPONENTI S.R.L.",
+    "currency": "EUR",
+    "valid_from": "01/10/2026",
+    "lines": [
+      {
+        "supplier_code": "CC-A118",
+        "description": "Manubrio MTB 720 mm, alluminio 6061",
+        "price": 18.5,
+        "pack_size": 1,
+        "min_order_qty": 5,
+        "marker": "*",
+        "page": 1,
+        "row": 9,
+        "raw_text": "CC-A118  Manubrio MTB 720 mm, alluminio 6061 *  € 18,50  5 pz"
+      },
+      {
+        "supplier_code": "CC-A121",
+        "description": "Attacco manubrio 90 mm alluminio",
+        "price": 14.2,
+        "pack_size": 1,
+        "min_order_qty": 5,
+        "marker": "*",
+        "page": 1,
+        "row": 11,
+        "raw_text": "CC-A121  Attacco manubrio 90 mm alluminio *  € 14,20  5 pz"
+      },
+      {
+        "supplier_code": "CC-A130",
+        "description": "Reggisella 31,6 x 350 alluminio",
+        "price": 13.9,
+        "pack_size": 1,
+        "min_order_qty": 5,
+        "marker": "*",
+        "page": 1,
+        "row": 13,
+        "raw_text": "CC-A130  Reggisella 31,6 x 350 alluminio *  € 13,90  5 pz"
+      },
+      {
+        "supplier_code": "CC-A140",
+        "description": "Pedali flat alluminio, perni sostituibili",
+        "price": 22.8,
+        "pack_size": 1,
+        "min_order_qty": 5,
+        "marker": "*",
+        "page": 1,
+        "row": 15,
+        "raw_text": "CC-A140  Pedali flat alluminio, perni sostituibili *  € 22,80  5 pz"
+      },
+      {
+        "supplier_code": "CC-P210",
+        "description": "Pedali in resina, city/trekking",
+        "price": 6.3,
+        "pack_size": 1,
+        "min_order_qty": 5,
+        "marker": "",
+        "page": 1,
+        "row": 17,
+        "raw_text": "CC-P210  Pedali in resina, city/trekking  € 6,30  5 pz"
+      },
+      {
+        "supplier_code": "CC-G401",
+        "description": "Manopole ergonomiche con blocco",
+        "price": 7.8,
+        "pack_size": 1,
+        "min_order_qty": 20,
+        "marker": "",
+        "page": 1,
+        "row": 19,
+        "raw_text": "CC-G401  Manopole ergonomiche con blocco  € 7,80  20 pz"
+      },
+      {
+        "supplier_code": "CC-G405",
+        "description": "Nastro manubrio sughero, 2 tappi",
+        "price": 6.9,
+        "pack_size": 1,
+        "min_order_qty": 5,
+        "marker": "",
+        "page": 1,
+        "row": 21,
+        "raw_text": "CC-G405  Nastro manubrio sughero, 2 tappi  € 6,90  5 pz"
+      },
+      {
+        "supplier_code": "CC-B610",
+        "description": "Coppia leve freno alluminio",
+        "price": 11.3,
+        "pack_size": 1,
+        "min_order_qty": 5,
+        "marker": "*",
+        "page": 1,
+        "row": 23,
+        "raw_text": "CC-B610  Coppia leve freno alluminio *  € 11,30  5 pz"
+      },
+      {
+        "supplier_code": "CC-S305",
+        "description": "Sella comfort con inserto gel",
+        "price": 18.25,
+        "pack_size": 1,
+        "min_order_qty": 5,
+        "marker": "",
+        "page": 1,
+        "row": 30,
+        "raw_text": "CC-S305  Sella comfort con inserto gel  € 18,25  5 pz"
+      },
+      {
+        "supplier_code": "CC-S310",
+        "description": "Sella sportiva strada, binari cromo",
+        "price": 24.4,
+        "pack_size": 1,
+        "min_order_qty": 5,
+        "marker": "",
+        "page": 1,
+        "row": 32,
+        "raw_text": "CC-S310  Sella sportiva strada, binari cromo  € 24,40  5 pz"
+      },
+      {
+        "supplier_code": "CC-M510",
+        "description": "Set parafanghi 28\" con attacchi",
+        "price": 14.6,
+        "pack_size": 1,
+        "min_order_qty": 5,
+        "marker": "",
+        "page": 1,
+        "row": 39,
+        "raw_text": "CC-M510  Set parafanghi 28\" con attacchi  € 14,60  5 pz"
+      },
+      {
+        "supplier_code": "CC-M520",
+        "description": "Portapacchi posteriore alluminio 25 kg",
+        "price": 21.7,
+        "pack_size": 1,
+        "min_order_qty": 5,
+        "marker": "*",
+        "page": 1,
+        "row": 41,
+        "raw_text": "CC-M520  Portapacchi posteriore alluminio 25 kg *  € 21,70  5 pz"
+      },
+      {
+        "supplier_code": "CC-C700",
+        "description": "Catena 9 velocità 116 maglie",
+        "price": 12.4,
+        "pack_size": 1,
+        "min_order_qty": 5,
+        "marker": "",
+        "page": 1,
+        "row": 48,
+        "raw_text": "CC-C700  Catena 9 velocità 116 maglie  € 12,40  5 pz"
+      },
+      {
+        "supplier_code": "CC-C705",
+        "description": "Catena 11 velocità 116 maglie",
+        "price": 22.9,
+        "pack_size": 1,
+        "min_order_qty": 5,
+        "marker": "",
+        "page": 1,
+        "row": 50,
+        "raw_text": "CC-C705  Catena 11 velocità 116 maglie  € 22,90  5 pz"
+      },
+      {
+        "supplier_code": "CC-C720",
+        "description": "Cassetta 9v 11-32",
+        "price": 19.6,
+        "pack_size": 1,
+        "min_order_qty": 5,
+        "marker": "",
+        "page": 1,
+        "row": 52,
+        "raw_text": "CC-C720  Cassetta 9v 11-32  € 19,60  5 pz"
+      }
+    ],
+    "notes": [
+      {
+        "text": "* articoli in alluminio. Prezzi IVA esclusa, resa franco nostro magazzino. Pagamento 60 gg d.f.f.m.",
+        "applies_to_marker": "*",
+        "surcharge_pct": null,
+        "valid_from": null
+      },
+      {
+        "text": "Nota: a causa dell'aumento dei costi della materia prima, dal 1° novembre 2026 verrà applicata una maggiorazione del 4% su tutti gli articoli contrassegnati con *, non inclusa nei prezzi sopra indicati.",
+        "applies_to_marker": "*",
+        "surcharge_pct": 4.0,
+        "valid_from": "2026-11-01"
+      }
+    ]
+  }
+}

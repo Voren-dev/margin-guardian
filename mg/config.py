@@ -1,4 +1,5 @@
 """Fixed values the calculations depend on. Each one is declared, never guessed."""
+import os
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -14,3 +15,12 @@ FX_TO_EUR = {
     "GBP": 1.17,
 }
 FX_NOTE = "demo rate, fixed (data/demo/README.md)"
+
+# The Evolus document extractor that reads PDF price lists, and its output format.
+# These are identifiers, not secrets: without the API key they open nothing.
+# Set the two variables to point the code at another workspace.
+EVOLUS_EXTRACTOR_ID = os.environ.get("EVOLUS_EXTRACTOR_ID", "38d6aa12-292a-4746-9b3c-bd910df0e753")
+EVOLUS_PRICE_LIST_FORMAT_ID = os.environ.get("EVOLUS_PRICE_LIST_FORMAT_ID", "a2096135-3a56-4d52-8020-86a364964cf2")
+
+# Saved extractor answers, one per PDF. Reused while the PDF is unchanged.
+EXTRACT_RESULTS_DIR = ROOT / "data" / "demo" / "results" / "extract"

@@ -3,9 +3,6 @@ import pytest
 
 from conftest import ALUMINIUM_CODES, PRICE_LISTS
 
-pdf_not_built = pytest.mark.xfail(reason="the PDF reader is not built yet")
-
-
 def by_code(supplier):
     from mg.extract import extract_price_list
 
@@ -13,7 +10,6 @@ def by_code(supplier):
     return {line.supplier_code: line for line in lines}, notes
 
 
-@pdf_not_built
 def test_veloparts_pdf_is_read():
     lines, _ = by_code("veloparts")
     assert lines["VP-10233"].price == 26.39
@@ -22,7 +18,6 @@ def test_veloparts_pdf_is_read():
     assert "VP-50320" not in lines  # discontinued
 
 
-@pdf_not_built
 def test_ciclo_prices_with_a_comma_are_read():
     lines, _ = by_code("ciclo")
     assert lines["CC-S305"].price == 18.25
@@ -30,7 +25,6 @@ def test_ciclo_prices_with_a_comma_are_read():
     assert lines["CC-G401"].min_order_qty == 20
 
 
-@pdf_not_built
 def test_ciclo_footnote_becomes_a_document_note():
     lines, notes = by_code("ciclo")
     surcharges = [note for note in notes if note.effect.get("surcharge_pct") == 4]
@@ -68,14 +62,78 @@ def test_trailgear_lines_point_to_their_sheet_row():
     assert any("GBP" in note.text for note in notes)
 
 
-def test_pdf_says_not_implemented_yet():
+def test_pdf_lines_point_to_their_page_and_row():
+    lines, _ = by_code("veloparts")
+    light = lines["VP-10233"]
+    assert light.source.page == 1
+    assert "VP-10233" in light.source.raw_text and "26.39" in light.source.raw_text
+
+
+def test_unknown_format_is_refused():
     from mg.extract import extract_price_list
 
-    with pytest.raises(NotImplementedError, match="not implemented yet"):
-        extract_price_list(PRICE_LISTS["veloparts"][1])
+    with pytest.raises(ValueError, match="unsupported"):
+        extract_price_list("price-list.docx")
 
 
-@pdf_not_built
+# --- the check of the extractor's answer against the PDF (no network: answers are written by hand) ---
+
+PDF_ROWS = [
+    (1, 5, "VP-60010  Satteltasche S, 0,6 L  Bags  1  9.90"),
+    (1, 6, "VP-60020  Rahmentasche 1,5 L wasserabweisend  Bags  1  16.20"),
+    (1, 7, "Preise netto zzgl. MwSt. Gültig ab 01.10.2026. Mindestbestellwert 250 EUR."),
+]
+
+
+def answer(*lines):
+    return {"lines": [{"supplier_code": code, "price": price} for code, price in lines]}
+
+
+def test_a_correct_answer_passes_the_check():
+    from mg.extract.pdf import check_against_pdf
+
+    data = answer(("VP-60010", 9.90), ("VP-60020", 16.20))
+    assert check_against_pdf(data, PDF_ROWS) == []
+    assert data["lines"][1]["row"] == 6
+    assert data["lines"][1]["raw_text"] == PDF_ROWS[1][2]
+
+
+def test_a_wrong_price_is_caught():
+    from mg.extract.pdf import check_against_pdf
+
+    problems = check_against_pdf(answer(("VP-60010", 24.90), ("VP-60020", 16.20)), PDF_ROWS)
+    assert len(problems) == 1 and "VP-60010" in problems[0] and "24.9" in problems[0]
+
+
+def test_a_skipped_row_is_caught():
+    from mg.extract.pdf import check_against_pdf
+
+    problems = check_against_pdf(answer(("VP-60010", 9.90)), PDF_ROWS)
+    assert len(problems) == 1 and "VP-60020" in problems[0]
+
+
+def test_an_invented_product_is_caught():
+    from mg.extract.pdf import check_against_pdf
+
+    problems = check_against_pdf(answer(("VP-60010", 9.90), ("VP-60020", 16.20), ("VP-99999", 5.00)), PDF_ROWS)
+    assert problems == ["VP-99999 is not in the document"]
+
+
+def test_a_footnote_number_must_be_written_in_the_note():
+    from mg.extract.pdf import keep_what_is_written
+
+    note = "Dal 1° novembre 2026 verrà applicata una maggiorazione del 4% sugli articoli con *."
+    assert keep_what_is_written({"surcharge_pct": 4, "valid_from": "2026-11-01"}, note) == {
+        "surcharge_pct": 4.0,
+        "valid_from": "2026-11-01",
+    }
+    # a surcharge the note does not state is dropped, and its date with it
+    assert keep_what_is_written({"surcharge_pct": 6, "valid_from": "2026-11-01"}, note) == {
+        "surcharge_pct": None,
+        "valid_from": None,
+    }
+
+
 def test_every_line_points_to_its_row():
     for supplier in PRICE_LISTS:
         lines, _ = by_code(supplier)

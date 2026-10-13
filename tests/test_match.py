@@ -5,7 +5,6 @@ from conftest import CATALOG, PRICE_LISTS, changes_for
 from mg.match import diff_price_lists
 from mg.schemas import PriceLine, SourceRef
 
-pdf_not_built = pytest.mark.xfail(reason="the PDF reader is not built yet")
 llm_match_not_built = pytest.mark.xfail(reason="matching by product name with the model is not built yet")
 
 
@@ -83,7 +82,6 @@ def test_a_code_listed_twice_is_an_error():
         diff_price_lists([line("X-1", 1.00), line("X-1", 2.00)], [])
 
 
-@pdf_not_built
 def test_veloparts_changes():
     kinds = changes_for("veloparts")
     for code in ("VP-10233", "VP-10234", "VP-30108", "VP-60030"):
@@ -94,7 +92,6 @@ def test_veloparts_changes():
     assert len(kinds) == 7  # nothing else changed
 
 
-@pdf_not_built
 def test_ciclo_changes():
     kinds = changes_for("ciclo")
     assert "price_up" in kinds["CC-S305"]
@@ -134,7 +131,6 @@ def test_a_code_the_catalog_does_not_know_has_no_sku():
     assert matched.sku is None
 
 
-@pdf_not_built
 def test_every_known_code_finds_its_sku():
     from mg.extract import extract_price_list
     from mg.match import match_to_catalog
