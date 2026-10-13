@@ -38,16 +38,22 @@ def changes_for(supplier):
     return kinds
 
 
-def all_findings():
-    """The whole pipeline on the three suppliers -> list of Finding."""
+def findings_for(supplier):
+    """The whole pipeline on one supplier -> list of Finding."""
     from mg.analyze import analyze
     from mg.extract import extract_price_list
     from mg.match import diff_price_lists, match_to_catalog
 
+    old_path, new_path = PRICE_LISTS[supplier]
+    old_lines, _ = extract_price_list(old_path)
+    new_lines, notes = extract_price_list(new_path)
+    matched = match_to_catalog(diff_price_lists(old_lines, new_lines), CATALOG)
+    return analyze(matched, notes, new_lines, CATALOG)
+
+
+def all_findings():
+    """The whole pipeline on the three suppliers -> list of Finding."""
     findings = []
-    for old_path, new_path in PRICE_LISTS.values():
-        old_lines, _ = extract_price_list(old_path)
-        new_lines, notes = extract_price_list(new_path)
-        matched = match_to_catalog(diff_price_lists(old_lines, new_lines), CATALOG)
-        findings += analyze(matched, notes, new_lines)
+    for supplier in PRICE_LISTS:
+        findings += findings_for(supplier)
     return findings
