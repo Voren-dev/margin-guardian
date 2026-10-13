@@ -1,4 +1,5 @@
-"""Step 2: old price list vs new price list -> list of Change.
+"""Step 2: old price list vs new price list -> list of Change,
+then Change + catalog -> list of MatchedChange.
 
 Plain comparison by supplier code. No model is involved here.
 
@@ -17,7 +18,10 @@ the cost per unit (price / pack_size).
 surcharge_note is not produced here: it comes from the notes of the document,
 not from comparing two rows.
 """
-from mg.schemas import Change, PriceLine
+from pathlib import Path
+
+from mg.catalog import load_catalog
+from mg.schemas import Change, MatchedChange, PriceLine
 
 
 def diff_price_lists(old_lines: list[PriceLine], new_lines: list[PriceLine]) -> list[Change]:
@@ -49,6 +53,32 @@ def diff_price_lists(old_lines: list[PriceLine], new_lines: list[PriceLine]) -> 
             changes.append(Change(supplier_code=code, kind="discontinued", old=old))
 
     return changes
+
+
+def match_to_catalog(changes: list[Change], catalog_path: Path | str) -> list[MatchedChange]:
+    """Link each Change to a product of the shop's catalog.
+
+    Today there is one way to match: the supplier code of the price list is the
+    same as the supplier code stored in the catalog (exact_code, confidence 1.0).
+
+    A code the catalog does not know (a new product, or a code the supplier
+    renamed) comes out with sku None and takes no part in the calculations.
+    Matching those by product name with the model is the next step: it will
+    start from the rows that leave this function with sku None, and its
+    matches will be marked match_method "llm" with their own confidence.
+    """
+    sku_by_code = {product.supplier_code: product.sku for product in load_catalog(catalog_path)}
+    matched = []
+    for change in changes:
+        matched.append(
+            MatchedChange(
+                **change.model_dump(),
+                sku=sku_by_code.get(change.supplier_code),
+                match_method="exact_code",
+                confidence=1.0 if change.supplier_code in sku_by_code else 0.0,
+            )
+        )
+    return matched
 
 
 def _by_code(lines: list[PriceLine]) -> dict[str, PriceLine]:

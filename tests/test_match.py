@@ -6,7 +6,7 @@ from mg.match import diff_price_lists
 from mg.schemas import PriceLine, SourceRef
 
 pdf_not_built = pytest.mark.xfail(reason="the PDF reader is not built yet")
-catalog_not_built = pytest.mark.xfail(reason="mg.match.match_to_catalog is not built yet")
+llm_match_not_built = pytest.mark.xfail(reason="matching by product name with the model is not built yet")
 
 
 def line(code, price, pack_size=1, min_order_qty=1):
@@ -110,7 +110,31 @@ def test_trailgear_changes():
     assert len(kinds) == 6  # nothing else changed
 
 
-@catalog_not_built
+def test_trailgear_codes_find_their_sku():
+    from mg.extract import extract_price_list
+    from mg.match import match_to_catalog
+
+    old_path, new_path = PRICE_LISTS["trailgear"]
+    old_lines, _ = extract_price_list(old_path)
+    new_lines, _ = extract_price_list(new_path)
+    matched = match_to_catalog(diff_price_lists(old_lines, new_lines), CATALOG)
+    assert {m.supplier_code: m.sku for m in matched}["TG-B4001"] == "RL-1044"
+    for m in matched:
+        assert m.sku is not None
+        assert m.match_method == "exact_code"
+        assert m.confidence == 1.0
+
+
+def test_a_code_the_catalog_does_not_know_has_no_sku():
+    from mg.match import match_to_catalog
+
+    changes = diff_price_lists([], [line("ZZ-0001", 9.90)])  # a new product
+    matched = match_to_catalog(changes, CATALOG)[0]
+    assert matched.kind == "new_product"
+    assert matched.sku is None
+
+
+@pdf_not_built
 def test_every_known_code_finds_its_sku():
     from mg.extract import extract_price_list
     from mg.match import match_to_catalog
@@ -126,7 +150,7 @@ def test_every_known_code_finds_its_sku():
             assert matched.confidence == 1.0
 
 
-@catalog_not_built
+@llm_match_not_built
 @pytest.mark.network
 def test_a_code_missing_from_the_catalog_goes_through_the_model():
     """A known product whose supplier code is not in the catalog is matched by name."""
