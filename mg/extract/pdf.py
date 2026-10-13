@@ -115,6 +115,32 @@ def load_or_extract(path: Path) -> dict:
     return data
 
 
+def keys_are_set() -> bool:
+    """True if this machine can call Evolus (the two keys are in the environment or in .env)."""
+    llm.load_env()
+    return bool(os.environ.get("EVOLUS_API_KEY")) and bool(os.environ.get("EVOLUS_APPLICATION_ID"))
+
+
+def live_reads_left() -> int:
+    """How many live readings are still allowed today."""
+    counter = config.LIVE_COUNTER_DIR / f"{date.today().isoformat()}.count"
+    used = int(counter.read_text()) if counter.exists() else 0
+    return max(0, config.LIVE_READS_PER_DAY - used)
+
+
+def read_live(path: Path) -> dict:
+    """Reads a PDF again right now, ignoring the saved answer. Counts against the daily limit.
+
+    Returns the extracted data, checked against the PDF like every other reading.
+    """
+    if live_reads_left() == 0:
+        raise ExtractionError("the daily limit of live readings has been reached: try again tomorrow")
+    counter = config.LIVE_COUNTER_DIR / f"{date.today().isoformat()}.count"
+    counter.parent.mkdir(parents=True, exist_ok=True)
+    counter.write_text(str(config.LIVE_READS_PER_DAY - live_reads_left() + 1))
+    return extract_and_check(path)
+
+
 def extract_and_check(path: Path) -> dict:
     """Asks Evolus for the data until the answer agrees with the PDF, at most MAX_ATTEMPTS times."""
     text_rows = pdf_text_rows(path)

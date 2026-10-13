@@ -46,3 +46,8 @@ SUPPLIER_EMAILS = {
 
 # Saved email texts, one per supplier, so the demo does not call Evolus again.
 EMAIL_RESULTS_DIR = ROOT / "data" / "demo" / "results" / "email"
+
+# The public demo lets a visitor ask for a live reading of a demo PDF (model on AMD, through Evolus).
+# This is the most live readings allowed in one day, all visitors together.
+LIVE_READS_PER_DAY = 20
+LIVE_COUNTER_DIR = ROOT / ".live"

@@ -3,6 +3,7 @@ import streamlit as st
 
 from pipeline import HIDDEN_KINDS, document_path, euro, label, load_demo
 from source_view import show_source
+from live_view import show_live_reading
 from trace_view import show_trace
 
 demo = load_demo()
@@ -25,6 +26,10 @@ st.markdown("##### Where it comes from")
 captions = ("In the footnote", "The product row") if finding.kind == "surcharge_note" else ("New price list", "Old price list")
 for source, caption in zip(reversed(finding.sources), captions):
     show_source(document_path(source.document), source, caption)
+
+newest = finding.sources[-1] if finding.kind != "surcharge_note" else finding.sources[0]
+if newest.document.lower().endswith(".pdf"):
+    show_live_reading(document_path(newest.document), newest)
 
 st.divider()
 st.markdown("##### How it is calculated")
