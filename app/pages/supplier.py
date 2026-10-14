@@ -22,7 +22,9 @@ key = st.session_state.get("supplier_key")
 if key not in DEMO_SUPPLIERS:
     st.switch_page("pages/home.py")
 
-report = supplier_report(key)
+# the reading made on the start page (a file read live, a photo), or else the saved one
+report = st.session_state.get("readings", {}).get(key) or supplier_report(key)
+photo = st.session_state.get("photos", {}).get(key)
 supplier, old_name, new_name = DEMO_SUPPLIERS[key]
 findings, products = report.findings, report.products
 increases = report.increases()
@@ -40,8 +42,10 @@ def listed_price(cost_eur: float, source) -> str:
     return f"{SYMBOLS.get(source.currency, source.currency + ' ')}{price:.2f}"
 
 
-st.caption(f"PRICE LIST · {new_name} · compared with {old_name}")
+st.caption(f"PRICE LIST · {report.new_file} · compared with {old_name}")
 st.markdown(f"## {supplier}")
+if st.session_state.get("reading_notes", {}).get(key):
+    st.warning(st.session_state["reading_notes"][key])
 
 def short(amount: float) -> str:
     """-2799.4 -> '−€2,799'"""
@@ -155,7 +159,10 @@ with email_tab:
 
 with document_tab:
     path = SUPPLIERS_DIR / "new" / new_name
-    if path.suffix.lower() == ".pdf":
+    if photo:
+        st.image(photo, use_container_width=True)
+        st.caption("The photo these numbers were read from.")
+    elif path.suffix.lower() == ".pdf":
         first = increases[0].sources[-1] if increases else None
         footnotes = [finding for finding in report.hidden() if finding.kind == "surcharge_note"]
         if footnotes:  # the story of this price list is the footnote, so that is what gets highlighted

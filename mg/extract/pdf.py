@@ -54,8 +54,19 @@ class ExtractionError(Exception):
 
 
 def read_pdf_price_list(path: Path) -> tuple[list[PriceLine], list[DocumentNote]]:
-    data = load_or_extract(path)
+    return price_list_from(load_or_extract(path), path)
 
+
+def read_pdf_price_list_live(path: Path) -> tuple[list[PriceLine], list[DocumentNote]]:
+    """Reads the PDF again right now (see read_live), footnotes included, without touching the saved answer."""
+    data = read_live(path)
+    for note in data["notes"]:
+        note.update(read_note(note["text"]))
+    return price_list_from(data, path)
+
+
+def price_list_from(data: dict, path: Path) -> tuple[list[PriceLine], list[DocumentNote]]:
+    """The extracted data of one PDF as PriceLine and DocumentNote."""
     lines = []
     for item in data["lines"]:
         lines.append(
