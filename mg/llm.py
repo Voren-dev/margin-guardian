@@ -58,7 +58,7 @@ def build_payload(user, system=DEFAULT_SYSTEM, model=None, max_tokens=800, json_
     return payload
 
 
-def send(payload):
+def send(payload, timeout=TIMEOUT_SECONDS):
     """One HTTP call to /chat/completions. Returns (status, body text, Retry-After header)."""
     load_env()
     key = os.environ.get("AMD_TOKENFACTORY_API_KEY", "")
@@ -72,7 +72,7 @@ def send(payload):
         headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
     )
     try:
-        with urllib.request.urlopen(request, timeout=TIMEOUT_SECONDS) as response:
+        with urllib.request.urlopen(request, timeout=timeout) as response:
             return response.status, response.read().decode(), None
     except urllib.error.HTTPError as error:
         return error.code, error.read().decode(errors="replace"), error.headers.get("Retry-After")
@@ -80,10 +80,10 @@ def send(payload):
         raise LLMError(f"network error: {error}") from error
 
 
-def complete(payload):
+def complete(payload, timeout=TIMEOUT_SECONDS):
     """Sends the payload and returns the answer text. On 429 it waits and tries again."""
     for attempt in range(1, MAX_ATTEMPTS + 1):
-        status, body, retry_after = send(payload)
+        status, body, retry_after = send(payload, timeout)
         if status == 200:
             choice = json.loads(body)["choices"][0]
             text = choice["message"].get("content") or ""

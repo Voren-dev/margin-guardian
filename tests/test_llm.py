@@ -21,7 +21,7 @@ def answer(text, finish_reason="stop"):
 
 def test_a_429_is_retried(monkeypatch):
     replies = [(429, "slow down", None), answer("OK")]
-    monkeypatch.setattr(llm, "send", lambda payload: replies.pop(0))
+    monkeypatch.setattr(llm, "send", lambda payload, *_: replies.pop(0))
     monkeypatch.setattr(llm.time, "sleep", lambda seconds: None)
     assert llm.ask_text("hello") == "OK"
     assert replies == []
@@ -29,7 +29,7 @@ def test_a_429_is_retried(monkeypatch):
 
 def test_it_gives_up_after_too_many_429(monkeypatch):
     calls = []
-    monkeypatch.setattr(llm, "send", lambda payload: calls.append(1) or (429, "slow down", None))
+    monkeypatch.setattr(llm, "send", lambda payload, *_: calls.append(1) or (429, "slow down", None))
     monkeypatch.setattr(llm.time, "sleep", lambda seconds: None)
     with pytest.raises(llm.LLMError):
         llm.ask_text("hello")
@@ -37,18 +37,18 @@ def test_it_gives_up_after_too_many_429(monkeypatch):
 
 
 def test_a_cut_off_answer_is_an_error(monkeypatch):
-    monkeypatch.setattr(llm, "send", lambda payload: answer("OK and then", finish_reason="length"))
+    monkeypatch.setattr(llm, "send", lambda payload, *_: answer("OK and then", finish_reason="length"))
     with pytest.raises(llm.LLMError):
         llm.ask_text("hello")
 
 
 def test_json_inside_a_code_fence_is_still_parsed(monkeypatch):
-    monkeypatch.setattr(llm, "send", lambda payload: answer('```json\n{"same": true}\n```'))
+    monkeypatch.setattr(llm, "send", lambda payload, *_: answer('```json\n{"same": true}\n```'))
     assert llm.ask_json("same product?") == {"same": True}
 
 
 def test_an_answer_without_json_is_an_error(monkeypatch):
-    monkeypatch.setattr(llm, "send", lambda payload: answer("I think they are the same."))
+    monkeypatch.setattr(llm, "send", lambda payload, *_: answer("I think they are the same."))
     with pytest.raises(llm.LLMError):
         llm.ask_json("same product?")
 

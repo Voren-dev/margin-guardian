@@ -1,4 +1,5 @@
 """One price list received: the numbers on top, then tabs for changes, moves, the email and the document."""
+import time
 from urllib.parse import quote
 
 import streamlit as st
@@ -11,6 +12,9 @@ from mg.report import DEMO_SUPPLIERS
 from source_view import pdf_row_image, sheet_rows
 
 SYMBOLS = {"EUR": "€", "GBP": "£"}
+COUNT_STEPS = 24  # frames of the count-up on the first view
+COUNT_PAUSE = 0.04  # seconds between frames: about one second in all
+REVEAL_PAUSE = 0.6  # seconds before each hidden change appears
 
 key = st.session_state.get("supplier_key")
 if key not in DEMO_SUPPLIERS:
@@ -43,15 +47,26 @@ def short(amount: float) -> str:
 
 
 best = max(("negotiate", "reprice"), key=report.total)
-a, b, c, d = st.columns(4)
-a.metric("Changes", len(findings))
-b.metric("Easy to miss", len(report.hidden()))
-c.metric("Per year, as it is", short(report.total("absorb")))
-d.metric(f"Per year, if you {best}", short(report.total(best)))
+# The first time a price list is opened, the numbers count up and the hidden changes appear one by one.
+counted = st.session_state.setdefault("counted", set())
+first_view = key not in counted
+counted.add(key)
+
+tiles = [tile.empty() for tile in st.columns(4)]
+for step in range(1, COUNT_STEPS + 1) if first_view else [COUNT_STEPS]:
+    share = step / COUNT_STEPS
+    tiles[0].metric("Changes", round(len(findings) * share))
+    tiles[1].metric("Easy to miss", round(len(report.hidden()) * share))
+    tiles[2].metric("Per year, as it is", short(report.total("absorb") * share))
+    tiles[3].metric(f"Per year, if you {best}", short(report.total(best) * share))
+    if step < COUNT_STEPS:
+        time.sleep(COUNT_PAUSE)
 
 # What nobody would notice, first.
 for finding in report.hidden():
     product = products[finding.sku]
+    if first_view:
+        time.sleep(REVEAL_PAUSE)
     with st.container(border=True):
         if finding.kind == "pack_change":
             old_src, new_src = finding.sources

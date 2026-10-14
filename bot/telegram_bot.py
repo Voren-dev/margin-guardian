@@ -1,4 +1,4 @@
-"""Telegram bot: forward a demo price list, get what changed, what it costs, and three moves.
+"""Telegram bot: forward a demo price list (or a photo of one), get what changed, what it costs, and three moves.
 
 Plain long polling on the Telegram Bot API, no framework. Run from the project folder:
     .venv/bin/python bot/telegram_bot.py
@@ -25,12 +25,17 @@ from mg.export import new_prices_csv  # noqa: E402
 from mg.analyze import expected_monthly_units  # noqa: E402
 from mg.forecast import load_sales  # noqa: E402
 from mg.negotiate import draft_email  # noqa: E402
-from mg.report import DEMO_SUPPLIERS, HIDDEN_KINDS, identify, run_supplier  # noqa: E402
+from mg.extract.photo import PhotoError, read_photo  # noqa: E402
+from mg.report import DEMO_SUPPLIERS, HIDDEN_KINDS, SupplierReport, identify, run_supplier, supplier_of  # noqa: E402
 
 
 log = logging.getLogger("margin-guardian-bot")
 
 MAX_FILE_BYTES = 5 * 1024 * 1024
+IMAGE_TYPES = ("image/jpeg", "image/png")
+
+# the last photo read in each chat, so the buttons under its summary use that reading
+photo_reports: dict[int, SupplierReport] = {}
 SITE = "https://margin.voren.dev"
 
 WELCOME = (
@@ -39,7 +44,7 @@ WELCOME = (
     "Forward a supplier's price list and I tell you what changed, what it costs you in a year, "
     "and three moves: absorb, reprice or negotiate.\n\n"
     "This is a demo: it knows the three suppliers of an invented bike shop. "
-    "Pick one below, or forward one of their price lists.\n\n"
+    "Pick one below, forward one of their price lists, or send a photo of one printed on paper.\n\n"
     f"Full app: {SITE}"
 )
 
@@ -93,11 +98,11 @@ def supplier_buttons() -> list[list[tuple[str, str]]]:
 
 
 def move_buttons(key: str) -> list[list[tuple[str, str]]]:
+    """key is a demo supplier, or "photo" for the last photo read in the chat."""
     return [[("Absorb", f"a:{key}"), ("Reprice", f"r:{key}"), ("Negotiate", f"n:{key}")]]
 
 
-def summary(key: str) -> str:
-    report = run_supplier(key)
+def summary(report: SupplierReport) -> str:
     lines = [
         f"<b>{html.escape(report.supplier)}</b> · {html.escape(report.new_file)}",
         f"{len(report.findings)} changes, {len(report.hidden())} of them hidden",
@@ -119,8 +124,7 @@ def summary(key: str) -> str:
     return "\n".join(lines)
 
 
-def absorb_text(key: str) -> str:
-    report = run_supplier(key)
+def absorb_text(report: SupplierReport) -> str:
     lines = [f"<b>Absorb</b> · {html.escape(report.supplier)}", "You keep your prices and pay the higher cost.", ""]
     for finding in report.increases():
         move = report.moves[finding.id]["absorb"]
@@ -129,8 +133,7 @@ def absorb_text(key: str) -> str:
     return "\n".join(lines)
 
 
-def reprice(tg: Telegram, chat_id: int, key: str):
-    report = run_supplier(key)
+def reprice(tg: Telegram, chat_id: int, report: SupplierReport):
     moves = [by_kind["reprice"] for by_kind in report.moves.values() if "reprice" in by_kind]
     units = sum(move.units_delta for move in moves)
     tg.send(
@@ -142,11 +145,10 @@ def reprice(tg: Telegram, chat_id: int, key: str):
         f"{units:+.0f} pieces a year.\nThe file below imports into your shop.",
     )
     csv_text = new_prices_csv(moves, {f.id: f.sku for f in report.findings}, report.products)
-    tg.send_file(chat_id, f"new-prices-{key}.csv", csv_text.encode(), "New retail prices (CSV)")
+    tg.send_file(chat_id, f"new-prices-{report.key}.csv", csv_text.encode(), "New retail prices (CSV)")
 
 
-def negotiate_text(key: str) -> str:
-    report = run_supplier(key)
+def negotiate_text(report: SupplierReport) -> str:
     increases = report.increases()
     sales = load_sales()
     units = {finding.sku: expected_monthly_units(report.products[finding.sku], sales) for finding in increases}
@@ -164,6 +166,15 @@ def negotiate_text(key: str) -> str:
 def handle_message(tg: Telegram, message: dict):
     chat_id = message["chat"]["id"]
     document = message.get("document")
+    photo = message["photo"][-1] if message.get("photo") else None  # the largest size
+    if document and document.get("mime_type") in IMAGE_TYPES:
+        photo = document
+    if photo:
+        if photo.get("file_size", 0) > MAX_FILE_BYTES:
+            tg.send(chat_id, "That photo is too big for this demo.")
+            return
+        handle_photo(tg, chat_id, tg.download(photo["file_id"]), photo.get("mime_type", "image/jpeg"))
+        return
     if document:
         if document.get("file_size", 0) > MAX_FILE_BYTES:
             tg.send(chat_id, "That file is too big for this demo.")
@@ -172,26 +183,54 @@ def handle_message(tg: Telegram, message: dict):
         if key is None:
             tg.send(chat_id, "This demo knows only the new price lists of its three suppliers. Pick one:", supplier_buttons())
             return
-        tg.send(chat_id, summary(key), move_buttons(key))
+        tg.send(chat_id, summary(run_supplier(key)), move_buttons(key))
         return
     tg.send(chat_id, WELCOME, supplier_buttons())  # /start, /demo or any text
+
+
+def handle_photo(tg: Telegram, chat_id: int, content: bytes, mime: str):
+    """Gemma reads the photo twice; the rows both readings agree on go through the same chain as a file."""
+    tg.send(chat_id, "Reading the photo with Gemma on AMD, twice, to check every number. About a minute...")
+    try:
+        _, lines, notes, dropped = read_photo(content, mime)
+    except (PhotoError, llm.LLMError) as error:
+        log.warning("photo not read: %s", error)
+        tg.send(chat_id, "I could not read that photo. Try again with the whole page flat and in focus.")
+        return
+    key = supplier_of(lines)
+    if key is None:
+        tg.send(chat_id, "I read the photo, but it is not a price list of one of the three demo suppliers. Pick one:", supplier_buttons())
+        return
+    report = run_supplier(key, lines, notes, "photo of the price list")
+    photo_reports[chat_id] = report
+    text = summary(report)
+    if dropped:
+        text += f"\n\n<i>{dropped} row(s) left out: the two readings of the photo did not agree on them.</i>"
+    tg.send(chat_id, text, move_buttons("photo"))
 
 
 def handle_callback(tg: Telegram, callback: dict):
     tg.call("answerCallbackQuery", {"callback_query_id": callback["id"]})
     chat_id = callback["message"]["chat"]["id"]
     action, _, key = callback.get("data", "").partition(":")
-    if key not in DEMO_SUPPLIERS:
+    if key == "photo":
+        report = photo_reports.get(chat_id)
+        if report is None:  # the bot restarted since the photo was read
+            tg.send(chat_id, "Send the photo again, please.")
+            return
+    elif key in DEMO_SUPPLIERS:
+        report = run_supplier(key)
+    else:
         return
     if action == "s":
-        tg.send(chat_id, summary(key), move_buttons(key))
+        tg.send(chat_id, summary(report), move_buttons(key))
     elif action == "a":
-        tg.send(chat_id, absorb_text(key), move_buttons(key))
+        tg.send(chat_id, absorb_text(report), move_buttons(key))
     elif action == "r":
-        reprice(tg, chat_id, key)
+        reprice(tg, chat_id, report)
     elif action == "n":
         tg.send(chat_id, "Writing the email...")
-        tg.send(chat_id, negotiate_text(key), move_buttons(key))
+        tg.send(chat_id, negotiate_text(report), move_buttons(key))
 
 
 def main():

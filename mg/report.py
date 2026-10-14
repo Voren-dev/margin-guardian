@@ -14,7 +14,7 @@ from mg.extract import extract_price_list
 from mg.match import diff_price_lists, match_to_catalog
 from mg.moves import build_moves
 from mg.review import audit
-from mg.schemas import Finding, Move
+from mg.schemas import DocumentNote, Finding, Move, PriceLine
 
 SUPPLIERS_DIR = Path(__file__).resolve().parent.parent / "data" / "demo" / "suppliers"
 
@@ -49,10 +49,15 @@ class SupplierReport:
         return [finding for finding in self.findings if finding.id in self.moves]
 
 
-def run_supplier(key: str) -> SupplierReport:
+def run_supplier(key: str, new_lines: list[PriceLine] | None = None, notes: list[DocumentNote] | None = None,
+                 new_file: str | None = None) -> SupplierReport:
+    """The chain on one demo supplier. Pass new_lines and notes to use a reading made elsewhere (a photo)."""
     supplier, old_name, new_name = DEMO_SUPPLIERS[key]
     old_lines, _ = extract_price_list(SUPPLIERS_DIR / "old" / old_name)
-    new_lines, notes = extract_price_list(SUPPLIERS_DIR / "new" / new_name)
+    if new_lines is None:
+        new_lines, notes = extract_price_list(SUPPLIERS_DIR / "new" / new_name)
+    else:
+        new_name = new_file or new_name
     matched = match_to_catalog(diff_price_lists(old_lines, new_lines), CATALOG_PATH)
     findings = analyze(matched, notes, new_lines)
 
@@ -75,3 +80,15 @@ def identify(content: bytes) -> str | None:
         if hashlib.sha256((SUPPLIERS_DIR / "new" / new_name).read_bytes()).hexdigest() == digest:
             return key
     return None
+
+
+def supplier_of(lines: list[PriceLine]) -> str | None:
+    """The demo supplier whose last price list shares the most article codes with these lines, or None."""
+    codes = {line.supplier_code for line in lines}
+    best, shared = None, 0
+    for key, (_, old_name, _) in DEMO_SUPPLIERS.items():
+        old_lines, _ = extract_price_list(SUPPLIERS_DIR / "old" / old_name)
+        count = len(codes & {line.supplier_code for line in old_lines})
+        if count > shared:
+            best, shared = key, count
+    return best if shared >= 3 else None
