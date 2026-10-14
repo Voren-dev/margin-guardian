@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Margin Guardian · pitch</title>
+<style>
+@font-face{font-family:'Bricolage';src:url(font/bricolage-grotesque.woff2) format('woff2');font-weight:200 800}
+@font-face{font-family:'JetBrains';src:url(font/jetbrains-mono-400.woff2) format('woff2');font-weight:400}
+@font-face{font-family:'JetBrains';src:url(font/jetbrains-mono-700.woff2) format('woff2');font-weight:700}
+@font-face{font-family:'Inter';src:url(font/Inter-SemiBold.woff2) format('woff2');font-weight:600}
+@font-face{font-family:'Inter';src:url(font/Inter-Bold.woff2) format('woff2');font-weight:700}
+:root{--bg:#0A2A21;--panel:#0E342A;--text:#F1EBDD;--muted:#9DB0A1;--faint:#72897A;--ochre:#FFB84D;--ochre2:#E09A2E}
+@page{size:1920px 1080px;margin:0}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg)}
+body{color:var(--text);font-family:'Inter',sans-serif;font-weight:600}
+.slide{width:1920px;height:1080px;padding:110px 140px;position:relative;overflow:hidden;page-break-after:always;background:var(--bg)}
+.slide:last-child{page-break-after:auto}
+.label{font-family:'JetBrains';font-size:26px;letter-spacing:.14em;text-transform:uppercase;color:var(--ochre);margin-bottom:34px}
+h1{font-family:'Bricolage';font-weight:700;font-size:118px;line-height:1.02;letter-spacing:-.02em}
+h2{font-family:'Bricolage';font-weight:700;font-size:84px;line-height:1.06;letter-spacing:-.015em;max-width:1500px}
+p.big{font-size:44px;line-height:1.35;color:var(--muted);max-width:1450px;margin-top:40px}
+.ochre{color:var(--ochre)}
+.foot{position:absolute;left:140px;right:140px;bottom:60px;display:flex;justify-content:space-between;font-family:'JetBrains';font-size:22px;color:var(--faint)}
+.panel{background:var(--panel);border-radius:28px;padding:48px 56px}
+.shot{border-radius:22px;border:2px solid #1d4a3c;box-shadow:0 30px 80px rgba(0,0,0,.35)}
+
+/* 1 title */
+.title h1{font-size:150px;margin-top:150px}
+.title p.big{font-size:52px;color:var(--text);margin-top:44px}
+.title .who{position:absolute;left:140px;bottom:110px;font-family:'JetBrains';font-size:28px;color:var(--muted)}
+
+/* 2 example */
+.price{display:flex;align-items:center;gap:60px;margin-top:70px}
+.price .tag{font-family:'Bricolage';font-weight:700;font-size:150px}
+.price .arrow{font-size:90px;color:var(--faint)}
+.price .old{color:var(--muted)}
+.verdict{margin-top:70px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:36px}
+.verdict .panel div:first-child{font-family:'JetBrains';font-size:24px;color:var(--faint);text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px}
+.verdict .panel div:last-child{font-family:'Bricolage';font-weight:700;font-size:64px}
+
+/* 3 numbers */
+.nums{display:grid;grid-template-columns:repeat(3,1fr);gap:36px;margin-top:70px}
+.nums .panel .n{font-family:'Bricolage';font-weight:700;font-size:130px;line-height:1}
+.nums .panel .t{font-size:34px;color:var(--muted);margin-top:18px}
+.total{margin-top:60px;display:flex;align-items:baseline;gap:40px}
+.total .n{font-family:'Bricolage';font-weight:800;font-size:170px;color:var(--ochre);line-height:1}
+.total .t{font-size:44px;color:var(--muted)}
+
+/* 4 live */
+.live{display:grid;grid-template-columns:1.15fr .85fr;gap:90px;align-items:center;height:100%}
+.steps{margin-top:50px;display:flex;flex-direction:column;gap:30px}
+.steps div{font-size:44px;display:flex;gap:30px;align-items:baseline}
+.steps b{font-family:'JetBrains';color:var(--ochre);font-size:34px;min-width:60px}
+.qr{text-align:center}
+.qr img{width:420px;height:420px;border-radius:24px}
+.qr div{font-family:'JetBrains';font-size:30px;color:var(--muted);margin-top:24px}
+.dot{display:inline-block;width:26px;height:26px;border-radius:50%;background:#E5484D;margin-right:18px;vertical-align:middle}
+
+/* 5 pipeline */
+.pipe{display:grid;grid-template-columns:repeat(3,1fr);gap:32px;margin-top:70px}
+.pipe .panel{padding:40px 44px;min-height:250px}
+.pipe .k{font-family:'JetBrains';font-size:26px;color:var(--ochre);margin-bottom:18px}
+.pipe .h{font-family:'Bricolage';font-weight:700;font-size:50px;margin-bottom:14px}
+.pipe .d{font-size:30px;line-height:1.35;color:var(--muted)}
+
+/* 6 trust */
+.trust{display:grid;grid-template-columns:.72fr 1.28fr;gap:70px;align-items:center;margin-top:50px}
+.rules{display:grid;grid-template-columns:repeat(3,1fr);gap:44px;margin-top:56px}
+.wide{width:100%;margin-top:56px;display:block}
+.rules div{font-size:38px;line-height:1.3}
+.rules div span{display:block;font-size:30px;color:var(--muted);margin-top:8px;font-weight:600}
+.trust img{width:100%}
+
+/* 7 amd */
+.stack{display:grid;grid-template-columns:repeat(2,1fr);gap:28px;margin-top:44px}
+.stack .panel{padding:34px 48px}
+.stack .panel .h{font-family:'Bricolage';font-weight:700;font-size:54px}
+.stack .panel .d{font-size:30px;color:var(--muted);margin-top:12px;line-height:1.35}
+.quote{margin-top:44px;font-family:'Bricolage';font-size:42px;line-height:1.25;border-left:8px solid var(--ochre);padding-left:44px;max-width:1550px}
+
+/* 8 next */
+.next{margin-top:70px;display:flex;flex-direction:column;gap:44px}
+.next div{font-size:50px;display:flex;gap:36px;align-items:baseline}
+.next b{font-family:'JetBrains';color:var(--ochre);font-size:36px}
+
+/* 9 try */
+.try{display:flex;gap:120px;margin-top:80px}
+.try .qr img{width:400px;height:400px}
+.try .qr div{color:var(--text);font-size:34px}
+</style>
+</head>
+<body>
+
+<section class="slide title">
+  <div class="label">AMD Developer Hackathon · ACT III · Business Agents</div>
+  <h1>Margin <span class="ochre">Guardian</span></h1>
+  <p class="big">The buyer a small shop can't hire.</p>
+  <div class="who">Aris Voren · voren.dev</div>
+</section>
+
+<section class="slide">
+  <div class="label">A new price list arrives</div>
+  <h2>Brake pads, from TrailGear:</h2>
+  <div class="price"><span class="tag old">£9.60</span><span class="arrow">→</span><span class="tag">£5.10</span></div>
+  <div class="verdict">
+    <div class="panel"><div>Cheaper?</div><div class="ochre">No.</div></div>
+    <div class="panel"><div>The pack</div><div>4 → 2 pads</div></div>
+    <div class="panel"><div>Per pad</div><div class="ochre">+6.2%</div></div>
+  </div>
+  <p class="big">A small shop gets dozens of price lists like this. Nobody checks every line.</p>
+  <div class="foot"><span>Demo data: the shop, the suppliers and the prices are made up</span><span>2</span></div>
+</section>
+
+<section class="slide">
+  <div class="label">What it costs, in one demo shop</div>
+  <h2>Three suppliers sent new price lists.</h2>
+  <div class="nums">
+    <div class="panel"><div class="n">19</div><div class="t">changes</div></div>
+    <div class="panel"><div class="n ochre">7</div><div class="t">easy to miss: a smaller pack, a footnote</div></div>
+    <div class="panel"><div class="n">3</div><div class="t">formats: PDF, Excel, a photo</div></div>
+  </div>
+  <div class="total"><span class="n">€9,155</span><span class="t">a year, if you do nothing</span></div>
+  <div class="foot"><span>Rideline Cycles, demo e-commerce</span><span>3</span></div>
+</section>
+
+<section class="slide">
+  <div class="live">
+    <div>
+      <div class="label"><span class="dot"></span>Live</div>
+      <h2>A paper price list. A phone. One photo.</h2>
+      <div class="steps">
+        <div><b>01</b>Photo of the printed list, sent to the bot</div>
+        <div><b>02</b>Gemma on AMD reads it, twice</div>
+        <div><b>03</b>What changed, what it costs, what to do</div>
+      </div>
+    </div>
+    <div class="qr"><img src="img/qr-bot.svg" alt="QR code of the Telegram bot"><div>@MarginGuardianbot</div></div>
+  </div>
+  <div class="foot"><span>Ciclo Componenti: the trap is in the footnote</span><span>4</span></div>
+</section>
+
+<section class="slide">
+  <div class="label">What it does</div>
+  <h2>From a price list to a decision.</h2>
+  <div class="pipe">
+    <div class="panel"><div class="k">01 · READ</div><div class="h">Every row</div><div class="d">PDF, Excel or photo. Prices, packs, footnotes.</div></div>
+    <div class="panel"><div class="k">02 · COMPARE</div><div class="h">With the last list</div><div class="d">Product by product, linked to the shop's catalog.</div></div>
+    <div class="panel"><div class="k">03 · CALCULATE</div><div class="h">In euros</div><div class="d">Cost per piece, margin before and after, cost per month.</div></div>
+    <div class="panel"><div class="k">04 · CHECK</div><div class="h">Every number</div><div class="d">A reviewer in code traces each cost back to its row.</div></div>
+    <div class="panel"><div class="k">05 · PROPOSE</div><div class="h">Three moves</div><div class="d">Absorb it, reprice under the cheapest competitor, or negotiate.</div></div>
+    <div class="panel"><div class="k">06 · WRITE</div><div class="h">The email</div><div class="d">Ready for the supplier. Nothing is sent: you press the button.</div></div>
+  </div>
+  <div class="foot"><span>margin.voren.dev</span><span>5</span></div>
+</section>
+
+<section class="slide">
+  <div class="label">Why you can trust it</div>
+  <h2>The AI reads. The code calculates. <span class="ochre">You sign.</span></h2>
+  <img class="shot wide" src="img/app-ciclo-footnote.png" alt="The price list in the app, with the footnote highlighted">
+  <div class="rules">
+    <div>No number from the model<span>Margins and euros come from plain code.</span></div>
+    <div>Every number has a source<span>Click it: its row in the document, highlighted.</span></div>
+    <div>Read twice, or not used<span>A photo counts only where two readings agree.</span></div>
+  </div>
+  <div class="foot"><span>The footnote that raises 6 products by 4%</span><span>6</span></div>
+</section>
+
+<section class="slide">
+  <div class="label">Built on AMD</div>
+  <h2>Open models on AMD GPUs, all the way.</h2>
+  <div class="stack">
+    <div class="panel"><div class="h">Gemma 4 · AMD Token Factory</div><div class="d">Reads PDFs, photos and footnotes.</div></div>
+    <div class="panel"><div class="h">Evolus</div><div class="d">The document extractor and the email tool, running on Gemma.</div></div>
+    <div class="panel"><div class="h">Qwen · backup</div><div class="d">Reads the photo if Gemma does not answer.</div></div>
+    <div class="panel"><div class="h">Python</div><div class="d">Every calculation and every check.</div></div>
+  </div>
+  <div class="quote">Gemma went down several times this week. So the app notices, says which service failed, and keeps working.</div>
+  <div class="foot"><span>Google DeepMind · AMD · Evolus</span><span>7</span></div>
+</section>
+
+<section class="slide">
+  <div class="label">Next</div>
+  <h2>From a demo shop to a real one.</h2>
+  <div class="next">
+    <div><b>01</b>Connect to the shop: Shopify, WooCommerce</div>
+    <div><b>02</b>The real catalog and sales, not a demo file</div>
+    <div><b>03</b>Price lists straight from the inbox</div>
+  </div>
+  <div class="foot"><span>Margin Guardian</span><span>8</span></div>
+</section>
+
+<section class="slide">
+  <div class="label">Try it now</div>
+  <h1>Margin <span class="ochre">Guardian</span></h1>
+  <div class="try">
+    <div class="qr"><img src="img/qr-site.svg" alt="QR code of the app"><div>margin.voren.dev</div></div>
+    <div class="qr"><img src="img/qr-bot.svg" alt="QR code of the Telegram bot"><div>@MarginGuardianbot</div></div>
+  </div>
+  <div class="foot"><span>Aris Voren · voren.dev</span><span>9</span></div>
+</section>
+
+</body>
+</html>

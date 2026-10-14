@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Margin Guardian · pitch</title>
+<style>
+@font-face{font-family:'Bricolage';src:url(font/bricolage-grotesque.woff2) format('woff2');font-weight:200 800}
+@font-face{font-family:'JetBrains';src:url(font/jetbrains-mono-400.woff2) format('woff2');font-weight:400}
+@font-face{font-family:'JetBrains';src:url(font/jetbrains-mono-700.woff2) format('woff2');font-weight:700}
+@font-face{font-family:'Inter';src:url(font/Inter-SemiBold.woff2) format('woff2');font-weight:600}
+@font-face{font-family:'Inter';src:url(font/Inter-Bold.woff2) format('woff2');font-weight:700}
+:root{--bg:#0A2A21;--panel:#0E342A;--text:#F1EBDD;--muted:#9DB0A1;--faint:#72897A;--ochre:#FFB84D;--ochre2:#E09A2E}
+@page{size:1920px 1080px;margin:0}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg)}
+body{color:var(--text);font-family:'Inter',sans-serif;font-weight:600}
+.slide{width:1920px;height:1080px;padding:110px 140px;position:relative;overflow:hidden;page-break-after:always;background:var(--bg)}
+.slide:last-child{page-break-after:auto}
+.label{font-family:'JetBrains';font-size:26px;letter-spacing:.14em;text-transform:uppercase;color:var(--ochre);margin-bottom:34px}
+h1{font-family:'Bricolage';font-weight:700;font-size:118px;line-height:1.02;letter-spacing:-.02em}
+h2{font-family:'Bricolage';font-weight:700;font-size:84px;line-height:1.06;letter-spacing:-.015em;max-width:1500px}
+p.big{font-size:44px;line-height:1.35;color:var(--muted);max-width:1450px;margin-top:40px}
+.ochre{color:var(--ochre)}
+.foot{position:absolute;left:140px;right:140px;bottom:60px;display:flex;justify-content:space-between;font-family:'JetBrains';font-size:22px;color:var(--faint)}
+.panel{background:var(--panel);border-radius:28px;padding:48px 56px}
+.shot{border-radius:22px;border:2px solid #1d4a3c;box-shadow:0 30px 80px rgba(0,0,0,.35)}
+
+/* 1 title */
+.title h1{font-size:150px;margin-top:150px}
+.title p.big{font-size:52px;color:var(--text);margin-top:44px}
+.title .who{position:absolute;left:140px;bottom:110px;font-family:'JetBrains';font-size:28px;color:var(--muted)}
+
+/* 2 example */
+.price{display:flex;align-items:center;gap:60px;margin-top:70px}
+.price .tag{font-family:'Bricolage';font-weight:700;font-size:150px}
+.price .arrow{font-size:90px;color:var(--faint)}
+.price .old{color:var(--muted)}
+.verdict{margin-top:70px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:36px}
+.verdict .panel div:first-child{font-family:'JetBrains';font-size:24px;color:var(--faint);text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px}
+.verdict .panel div:last-child{font-family:'Bricolage';font-weight:700;font-size:64px}
+
+/* 3 numbers */
+.nums{display:grid;grid-template-columns:repeat(3,1fr);gap:36px;margin-top:70px}
+.nums .panel .n{font-family:'Bricolage';font-weight:700;font-size:130px;line-height:1}
+.nums .panel .t{font-size:34px;color:var(--muted);margin-top:18px}
+.total{margin-top:60px;display:flex;align-items:baseline;gap:40px}
+.total .n{font-family:'Bricolage';font-weight:800;font-size:170px;color:var(--ochre);line-height:1}
+.total .t{font-size:44px;color:var(--muted)}
+
+/* 4 live */
+.live{display:grid;grid-template-columns:1.15fr .85fr;gap:90px;align-items:center;height:100%}
+.steps{margin-top:50px;display:flex;flex-direction:column;gap:30px}
+.steps div{font-size:44px;display:flex;gap:30px;align-items:baseline}
+.steps b{font-family:'JetBrains';color:var(--ochre);font-size:34px;min-width:60px}
+.qr{text-align:center}
+.qr img{width:420px;height:420px;border-radius:24px}
+.qr div{font-family:'JetBrains';font-size:30px;color:var(--muted);margin-top:24px}
+.dot{display:inline-block;width:26px;height:26px;border-radius:50%;background:#E5484D;margin-right:18px;vertical-align:middle}
+
+/* 5 pipeline */
+.pipe{display:grid;grid-template-columns:repeat(3,1fr);gap:32px;margin-top:70px}
+.pipe .panel{padding:40px 44px;min-height:250px}
+.pipe .k{font-family:'JetBrains';font-size:26px;color:var(--ochre);margin-bottom:18px}
+.pipe .h{font-family:'Bricolage';font-weight:700;font-size:50px;margin-bottom:14px}
+.pipe .d{font-size:30px;line-height:1.35;color:var(--muted)}
+
+/* 6 trust */
+.trust{display:grid;grid-template-columns:.72fr 1.28fr;gap:70px;align-items:center;margin-top:50px}
+.rules{display:grid;grid-template-columns:repeat(3,1fr);gap:44px;margin-top:56px}
+.wide{width:100%;margin-top:56px;display:block}
+.rules div{font-size:38px;line-height:1.3}
+.rules div span{display:block;font-size:30px;color:var(--muted);margin-top:8px;font-weight:600}
+.trust img{width:100%}
+
+/* 7 amd */
+.stack{display:grid;grid-template-columns:repeat(2,1fr);gap:28px;margin-top:44px}
+.stack .panel{padding:34px 48px}
+.stack .panel .h{font-family:'Bricolage';font-weight:700;font-size:54px}
+.stack .panel .d{font-size:30px;color:var(--muted);margin-top:12px;line-height:1.35}
+.quote{margin-top:44px;font-family:'Bricolage';font-size:42px;line-height:1.25;border-left:8px solid var(--ochre);padding-left:44px;max-width:1550px}
+
+/* 8 next */
+.next{margin-top:70px;display:flex;flex-direction:column;gap:44px}
+.next div{font-size:50px;display:flex;gap:36px;align-items:baseline}
+.next b{font-family:'JetBrains';color:var(--ochre);font-size:36px}
+
+/* 9 try */
+.try{display:flex;gap:120px;margin-top:80px}
+.try .qr img{width:400px;height:400px}
+.try .qr div{color:var(--text);font-size:34px}
+
+.card{display:flex;flex-direction:column;justify-content:center;padding:0 160px}
+.card .num{font-family:'JetBrains';font-size:30px;letter-spacing:.14em;color:var(--ochre);margin-bottom:40px}
+.card h1{font-size:132px;line-height:1.05;max-width:1600px}
+.card .o{color:var(--ochre)}
+.card p{font-size:52px;color:var(--muted);margin-top:56px;max-width:1550px;line-height:1.3}
+</style></head><body>
+<section class="slide card"><div class="num">01 / 05</div><h1>Every step runs <span class='o'>for real.</span></h1><p>A new PDF price list from Ciclo Componenti.</p></section>
+<section class="slide card"><div class="num">02 / 05</div><h1>The trap is in <span class='o'>the footnote.</span></h1><p>+4% on six products. Nobody reads that line.</p></section>
+<section class="slide card"><div class="num">03 / 05</div><h1>Three moves, <span class='o'>in euros a year.</span></h1><p>Absorb it, reprice or negotiate. The email is ready.</p></section>
+<section class="slide card"><div class="num">04 / 05</div><h1>Cheaper? <span class='o'>No.</span></h1><p>£9.60 → £5.10, but the pack went from 4 to 2: +6.2% per pad.</p></section>
+<section class="slide card"><div class="num">05 / 05</div><h1>Now a photo of <span class='o'>a paper list.</span></h1><p>Gemma on AMD reads it twice.</p></section>
+</body></html>
