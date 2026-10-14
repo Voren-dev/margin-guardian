@@ -32,6 +32,7 @@ from mg.schemas import DocumentNote, PriceLine, SourceRef
 
 EVOLUS_API = "https://api.evolus.ai/api/v1"
 TIMEOUT_SECONDS = 300
+LIVE_TIMEOUT_SECONDS = 150  # the live reading on the app: with Gemma it usually takes 15-35 seconds
 MAX_ATTEMPTS = 3  # how many times one PDF is sent before giving up
 
 # A printed price: digits, a dot or a comma, two decimals. Dates like 01.10.2026 do not match.
@@ -67,7 +68,8 @@ def read_pdf_price_list(path: Path) -> tuple[list[PriceLine], list[DocumentNote]
                 min_order_qty=int(item["min_order_qty"]),
                 markers=[item["marker"]] if item["marker"] else [],
                 source=SourceRef(
-                    document=path.name, page=item["page"], row=item["row"], raw_text=item["raw_text"]
+                    document=path.name, page=item["page"], row=item["row"], raw_text=item["raw_text"],
+                    currency=data["currency"], pack_size=int(item["pack_size"]),
                 ),
             )
         )
@@ -108,7 +110,7 @@ def load_or_extract(path: Path) -> dict:
         "document": path.name,
         "sha256": file_hash,
         "extracted_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        "extracted_by": "Evolus document extractor, Gemma-4-31B-IT on AMD Token Factory",
+        "extracted_by": f"Evolus document extractor, model {extractor_model()}",
         "data": data,
     }
     saved_path.write_text(json.dumps(saved, indent=2, ensure_ascii=False) + "\n")
@@ -138,16 +140,17 @@ def read_live(path: Path) -> dict:
     counter = config.LIVE_COUNTER_DIR / f"{date.today().isoformat()}.count"
     counter.parent.mkdir(parents=True, exist_ok=True)
     counter.write_text(str(config.LIVE_READS_PER_DAY - live_reads_left() + 1))
-    return extract_and_check(path, attempts=1)  # one try only: a visitor should not wait for retries
+    # one try only and a shorter wait: a visitor should not wait for retries
+    return extract_and_check(path, attempts=1, timeout=LIVE_TIMEOUT_SECONDS)
 
 
-def extract_and_check(path: Path, attempts: int = MAX_ATTEMPTS) -> dict:
+def extract_and_check(path: Path, attempts: int = MAX_ATTEMPTS, timeout: int = TIMEOUT_SECONDS) -> dict:
     """Asks Evolus for the data until the answer agrees with the PDF, at most `attempts` times."""
     text_rows = pdf_text_rows(path)
     problems = []
     for _ in range(attempts):
         try:
-            data = call_evolus(path)
+            data = call_evolus(path, timeout)
         except ExtractionError as error:
             problems = [str(error)]
             continue
@@ -177,8 +180,16 @@ def check_against_pdf(data: dict, text_rows: list[tuple[int, int, str]]) -> list
     problems = []
     used_rows = set()
 
-    for item in data["lines"]:
-        code = item["supplier_code"]
+    for item in data.get("lines") or []:
+        code = item.get("supplier_code") if isinstance(item, dict) else None
+        if not isinstance(code, str) or not code.strip():
+            problems.append(f"a line without a readable code: {item}")
+            continue
+        try:
+            price = float(item.get("price"))
+        except (TypeError, ValueError):
+            problems.append(f"{code}: price {item.get('price')!r} is not a number")
+            continue
         found = [row for row in text_rows if code in row[2].split()]
         if not found:
             problems.append(f"{code} is not in the document")
@@ -188,7 +199,8 @@ def check_against_pdf(data: dict, text_rows: list[tuple[int, int, str]]) -> list
         item["page"], item["row"], item["raw_text"] = page, row_number, text
 
         printed_prices = [float(price.replace(",", ".")) for price in PRICE_PATTERN.findall(text)]
-        if float(item["price"]) not in printed_prices:
+        item["price"] = price
+        if price not in printed_prices:
             problems.append(f"{code}: price {item['price']} is not printed on its row ({text})")
 
     for page, row_number, text in text_rows:
@@ -197,7 +209,7 @@ def check_against_pdf(data: dict, text_rows: list[tuple[int, int, str]]) -> list
     return problems
 
 
-def call_evolus(path: Path) -> dict:
+def call_evolus(path: Path, timeout: int = TIMEOUT_SECONDS) -> dict:
     """Sends one PDF to the Evolus extractor and returns the data in our format."""
     llm.load_env()
     key = os.environ.get("EVOLUS_API_KEY", "")
@@ -217,7 +229,7 @@ def call_evolus(path: Path) -> dict:
         headers={"X-ApiKey": key, "X-Application-Id": application_id, "Content-Type": content_type},
     )
     try:
-        with urllib.request.urlopen(request, timeout=TIMEOUT_SECONDS) as response:
+        with urllib.request.urlopen(request, timeout=timeout) as response:
             data = json.loads(response.read())
     except urllib.error.HTTPError as error:
         raise ExtractionError(f"Evolus answered HTTP {error.code} for {path.name}") from error
@@ -227,6 +239,20 @@ def call_evolus(path: Path) -> dict:
     if not data.get("lines"):
         raise ExtractionError(f"Evolus found no product lines in {path.name}")
     return data
+
+
+def extractor_model() -> str:
+    """The model the Evolus extractor is set to, read from Evolus (it is chosen there, not here)."""
+    llm.load_env()
+    request = urllib.request.Request(
+        f"{EVOLUS_API}/agents/{config.EVOLUS_EXTRACTOR_ID}",
+        headers={"X-ApiKey": os.environ.get("EVOLUS_API_KEY", ""), "X-Application-Id": os.environ.get("EVOLUS_APPLICATION_ID", "")},
+    )
+    with urllib.request.urlopen(request, timeout=30) as response:
+        agent = json.loads(response.read())
+    name = agent.get("modelDisplayName") or agent.get("modelKey") or "unknown"
+    # "own/..." is a model connected by us: here, AMD Token Factory
+    return f"{name} on AMD Token Factory" if str(agent.get("modelKey", "")).startswith("own/") else name
 
 
 def file_upload_body(path: Path) -> tuple[bytes, str]:

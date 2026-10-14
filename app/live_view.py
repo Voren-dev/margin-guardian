@@ -31,6 +31,9 @@ def show_live_reading(path: Path, source):
             except ExtractionError as error:
                 st.error(f"The reading was refused by the check: {error}")
                 return
+            except Exception:  # Evolus down, timeout, an answer of an unexpected shape: no details to the visitor
+                st.error("The live reading failed this time. The prices above are unchanged; try again later.")
+                return
         seconds = time.time() - started
 
         row = next((line for line in data["lines"] if line["supplier_code"] in source.raw_text), None)

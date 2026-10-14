@@ -6,6 +6,7 @@ primaryColor = "#FFB84D"
 textColor = "#F4EFE3"
 
 [client]
+showErrorDetails = "none"
 showSidebarNavigation = false
 toolbarMode = "minimal"
 

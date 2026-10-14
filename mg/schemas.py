@@ -40,6 +40,8 @@ class SourceRef(Contract):
     row: int | str  # row index, or a cell like "C14"
     raw_text: str  # the row exactly as written in the document
     bbox: tuple[float, float, float, float] | None = None  # to highlight the row in the PDF
+    currency: str | None = None  # for a price row: the currency the row is priced in
+    pack_size: int | None = None  # for a price row: the pack size read on that row
 
 
 class PriceLine(Contract):
@@ -95,6 +97,7 @@ class Finding(Contract):
     old_margin_pct: float | None = None
     new_margin_pct: float | None = None
     monthly_impact_eur: float
+    units_per_month: float | None = None  # the sales figure the impact was calculated with
     proposed_retail_price_eur: float | None = None
     rationale: str
     sources: list[SourceRef]  # the reviewer rejects a Finding with no sources

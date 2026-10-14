@@ -36,8 +36,9 @@ def read_xlsx_price_list(path: Path) -> tuple[list[PriceLine], list[DocumentNote
     note_rows = [(number, text) for number, text in note_rows if text]
     currency = find_currency(headers[price_col], [text for _, text in note_rows])
 
-    def source(row_number, text):
-        return SourceRef(document=path.name, sheet=sheet.title, row=row_number, raw_text=text)
+    def source(row_number, text, pack_size=None):
+        price_row = {"currency": currency, "pack_size": pack_size} if pack_size else {}
+        return SourceRef(document=path.name, sheet=sheet.title, row=row_number, raw_text=text, **price_row)
 
     notes = [DocumentNote(text=text, source=source(number, text)) for number, text in note_rows]
 
@@ -54,7 +55,7 @@ def read_xlsx_price_list(path: Path) -> tuple[list[PriceLine], list[DocumentNote
                 price=float(row[price_col]),
                 currency=currency,
                 pack_size=int(row[pack_col]),
-                source=source(index + 1, row_text(row)),
+                source=source(index + 1, row_text(row), int(row[pack_col])),
             )
         )
     return lines, notes

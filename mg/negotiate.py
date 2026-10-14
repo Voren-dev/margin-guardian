@@ -100,11 +100,29 @@ def build_facts(findings: list[Finding], products: dict[str, Product], units_per
         proposed = finding.old_unit_cost_eur + (finding.new_unit_cost_eur - finding.old_unit_cost_eur) * (1 - share)
         total_units += units_year
         total_cost += finding.monthly_impact_eur * 12
-        rows.append(
-            f"- {product.supplier_code} ({product.name}): from {n(finding.old_unit_cost_eur)} to "
-            f"{n(finding.new_unit_cost_eur)} EUR per unit, +{n(finding.pct_change, 1)}%. "
-            f"We buy about {n(units_year, 0)} units a year. We propose {n(proposed)} EUR."
-        )
+        old_src = finding.sources[0]
+        new_src = finding.sources[1] if finding.kind != "surcharge_note" else old_src
+        currency = new_src.currency or "EUR"
+        if currency == "EUR" and (old_src.pack_size or 1) == 1 and (new_src.pack_size or 1) == 1:
+            prices = (
+                f"from {n(finding.old_unit_cost_eur)} to {n(finding.new_unit_cost_eur)} EUR per unit, "
+                f"+{n(finding.pct_change, 1)}%. We buy about {n(units_year, 0)} units a year. We propose {n(proposed)} EUR."
+            )
+        else:
+            # in the supplier's own terms: its currency, per pack as listed
+            rate = config.FX_TO_EUR[currency]
+            old_pack, new_pack = old_src.pack_size or 1, new_src.pack_size or 1
+
+            def per(pack: int) -> str:
+                return "per unit" if pack == 1 else f"per pack of {n(pack, 0)}"
+
+            prices = (
+                f"from {n(finding.old_unit_cost_eur / rate * old_pack)} {currency} {per(old_pack)} to "
+                f"{n(finding.new_unit_cost_eur / rate * new_pack)} {currency} {per(new_pack)}, "
+                f"+{n(finding.pct_change, 1)}% per unit. We buy about {n(units_year, 0)} units a year. "
+                f"We propose {n(proposed / rate * new_pack)} {currency} {per(new_pack)}."
+            )
+        rows.append(f"- {product.supplier_code} ({product.name}): {prices}")
     for finding in findings:
         product = products[finding.sku]
         allowed.update(NUMBER.findall(f"{product.supplier_code} {product.name}"))  # digits inside codes and names

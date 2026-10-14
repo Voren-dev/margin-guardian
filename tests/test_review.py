@@ -37,10 +37,39 @@ def test_every_finding_of_the_demo_passes():
 
 def test_the_pack_trap_is_checked_per_unit():
     from mg.review import cost_comes_from_row
+    from mg.schemas import SourceRef
 
-    row = "TG-B4001 | Disc Pads Organic, pack of 2 pairs | Brakes | 2 | 5.1 | 9.69"
+    row = SourceRef(
+        document="trailgear_autumn-2026.xlsx", row=12, currency="GBP", pack_size=2,
+        raw_text="TG-B4001 | Disc Pads Organic, pack of 2 pairs | Brakes | 2 | 5.1 | 9.69",
+    )
     assert cost_comes_from_row(2.9835, row)  # 5.10 GBP / 2 * 1.17
+    assert not cost_comes_from_row(5.10 * 1.17, row)  # the pack ignored
+    assert not cost_comes_from_row(5.10 / 2, row)  # the exchange rate forgotten
     assert not cost_comes_from_row(2.50, row)
+
+
+def test_the_trailgear_traps_are_rejected_on_the_real_findings():
+    from mg.review import audit
+
+    pads = next(f for f in all_findings() if f.sku == "RL-1044")
+    assert audit(pads).passed
+    per_pack = pads.model_copy(update={"new_unit_cost_eur": round(5.10 * 1.17, 4)})
+    assert not audit(per_pack).passed
+    tyre = next(f for f in all_findings() if f.sku == "RL-1036")
+    no_fx = tyre.model_copy(update={"new_unit_cost_eur": round(tyre.new_unit_cost_eur / 1.17, 4)})
+    assert not audit(no_fx).passed
+
+
+def test_a_wrong_impact_or_margin_is_rejected():
+    from mg.review import audit
+
+    light = front_light()
+    result = audit(light.model_copy(update={"monthly_impact_eur": light.monthly_impact_eur * 10}))
+    assert not result.passed and "monthly impact" in result.reason
+    swapped = light.model_copy(update={"old_margin_pct": light.new_margin_pct, "new_margin_pct": light.old_margin_pct})
+    result = audit(swapped)
+    assert not result.passed and "margin" in result.reason
 
 
 def test_a_surcharge_not_written_in_the_footnote_is_rejected():

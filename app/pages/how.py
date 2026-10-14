@@ -11,7 +11,7 @@ steps = [
     ("2 · Check the reading", "Code reads the text of the PDF on its own and checks every extracted price against its row. If a price is wrong or a row is missing, it tries again, then refuses the price list."),
     ("3 · Compare", "Old price list against new one, product by product. A changed pack size is never called a lower price."),
     ("4 · Calculate", "Cost per unit in EUR, margin before and after, cost per month. Sales come from the last 12 months; how customers react to price is estimated from past price changes."),
-    ("5 · Review", "Before a number reaches the screen, code goes back to the row it cites and does the math again."),
+    ("5 · Review", "Before a number reaches the screen, code goes back to the row it cites: the unit cost must come out of a price printed there, with that row's pack size and currency, and the margins and the monthly cost must agree with it."),
     ("6 · You decide", "Three moves with their numbers. Nothing is sent or changed until you say so."),
 ]
 for title, text in steps:

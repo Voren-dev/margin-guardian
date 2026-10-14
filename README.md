@@ -46,8 +46,9 @@ arrives in the chat) or negotiate (the supplier email, not sent). Run it with
   checks every price the model read against its row. A wrong price or a missing row means a new
   reading, and after three failures the price list is refused (`mg/extract/pdf.py`).
 - **A reviewer written in code, not a second model.** Before a result reaches the screen,
-  `mg/review.py` goes back to the rows it cites and redoes the math. If it does not match, the
-  result is held back.
+  `mg/review.py` goes back to the rows it cites: each unit cost must come out of a price printed
+  there, with that row's own pack size and currency, and the change, the two margins and the
+  monthly impact must agree with the costs. If anything does not match, the result is held back.
 - **Numbers are pasted, not written.** In the supplier email the model writes the sentences; the
   figures are inserted by code from the calculated table, then checked again (`mg/negotiate.py`).
 - **Click any number** and the source opens: the PDF page with that row highlighted, or the Excel row.

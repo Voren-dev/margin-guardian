@@ -140,3 +140,17 @@ def test_every_line_points_to_its_row():
         for line in lines.values():
             assert line.source.document == PRICE_LISTS[supplier][1].name
             assert line.supplier_code in line.source.raw_text
+
+
+def test_a_malformed_answer_becomes_a_problem_not_a_crash():
+    from mg.extract.pdf import check_against_pdf
+    rows = [(1, 1, "VP-10233  Front light  1  26.39")]
+    for bad in (
+        {"lines": [{"supplier_code": "VP-10233", "price": "€ 26,39"}]},
+        {"lines": [{"price": 26.39}]},
+        {"lines": [{"supplier_code": "VP-10233", "price": None}]},
+        {"lines": ["not a line"]},
+        {},
+    ):
+        problems = check_against_pdf(bad, rows)
+        assert problems, bad

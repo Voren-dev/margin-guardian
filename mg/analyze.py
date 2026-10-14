@@ -107,6 +107,7 @@ def _cost_finding(change: MatchedChange, product: Product, sales: list[Sale]) ->
         old_margin_pct=round(old_margin, 2),
         new_margin_pct=round(new_margin, 2),
         monthly_impact_eur=round(monthly_impact, 2),
+        units_per_month=round(units, 4),
         rationale=rationale,
         sources=[change.old.source, change.new.source],
         calc_trace=_trace(change, product, old_cost, new_cost, pct_change, old_margin, new_margin, units, monthly_impact),
@@ -136,6 +137,7 @@ def _surcharge_finding(
         old_margin_pct=round(old_margin, 2),
         new_margin_pct=round(new_margin, 2),
         monthly_impact_eur=round(monthly_impact, 2),
+        units_per_month=round(units, 4),
         rationale=(
             f"{product.name}: the listed price did not change, but a footnote adds {surcharge_pct:g}%{since} "
             f"to the rows marked {note.applies_to_marker}. Margin from {old_margin:.1f}% to {new_margin:.1f}%."
