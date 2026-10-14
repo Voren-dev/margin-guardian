@@ -93,3 +93,10 @@ def test_a_price_that_went_down_gets_no_moves():
     cheaper = [f.id for f in findings if f.monthly_impact_eur <= 0]
     assert cheaper  # the torque wrench
     assert not [move for move in build_moves(findings) if move.finding_id in cheaper]
+
+
+def test_a_reprice_that_ends_above_the_old_profit_says_why():
+    moves = build_moves(all_findings())
+    above = [m for m in moves if m.kind == "reprice" and m.yearly_impact_eur > 0]
+    assert above, "the demo has reprice moves that earn more than before"
+    assert all("earning more than before" in m.assumptions for m in above)

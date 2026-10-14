@@ -45,13 +45,15 @@ def analyze(
         findings.append(_cost_finding(change, product_by_sku[change.sku], sales))
 
     product_by_code = {product.supplier_code: product for product in products}
+    repriced = {finding.sku for finding in findings}  # rows whose listed price changed too
     for note in notes:
         surcharge = note.effect.get("surcharge_pct")
         if not surcharge or not note.applies_to_marker:
             continue  # the note does not announce a surcharge on marked rows
         for line in new_lines:
             if note.applies_to_marker in line.markers and line.supplier_code in product_by_code:
-                findings.append(_surcharge_finding(line, note, surcharge, product_by_code[line.supplier_code], sales))
+                product = product_by_code[line.supplier_code]
+                findings.append(_surcharge_finding(line, note, surcharge, product, sales, product.sku in repriced))
     return findings
 
 
@@ -115,7 +117,7 @@ def _cost_finding(change: MatchedChange, product: Product, sales: list[Sale]) ->
 
 
 def _surcharge_finding(
-    line: PriceLine, note: DocumentNote, surcharge_pct: float, product: Product, sales: list[Sale]
+    line: PriceLine, note: DocumentNote, surcharge_pct: float, product: Product, sales: list[Sale], price_changed: bool = False
 ) -> Finding:
     """A surcharge written in a footnote: the listed price stays the same, the real cost goes up."""
     listed_cost = unit_cost_eur(line)
@@ -139,7 +141,9 @@ def _surcharge_finding(
         monthly_impact_eur=round(monthly_impact, 2),
         units_per_month=round(units, 4),
         rationale=(
-            f"{product.name}: the listed price did not change, but a footnote adds {surcharge_pct:g}%{since} "
+            f"{product.name}: "
+            + ("on top of the new listed price, " if price_changed else "the listed price did not change, but ")
+            + f"a footnote adds {surcharge_pct:g}%{since} "
             f"to the rows marked {note.applies_to_marker}. Margin from {old_margin:.1f}% to {new_margin:.1f}%."
         ),
         sources=[line.source, note.source],

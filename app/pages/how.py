@@ -1,4 +1,4 @@
-"""Page 3: how it works, in one screen."""
+"""Page 4: how it works, in one screen."""
 import streamlit as st
 
 st.page_link("pages/bill.py", label="← Back to all changes")

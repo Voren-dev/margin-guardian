@@ -12,12 +12,12 @@ import streamlit as st
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from mg.analyze import analyze  # noqa: E402
+from mg.analyze import analyze, expected_monthly_units  # noqa: E402
 from mg.catalog import load_catalog  # noqa: E402
 from mg.config import CATALOG_PATH  # noqa: E402
 from mg.extract import extract_price_list  # noqa: E402
 from mg.match import diff_price_lists, match_to_catalog  # noqa: E402
-from mg.forecast import load_sales, monthly_units  # noqa: E402
+from mg.forecast import load_sales  # noqa: E402
 from mg.moves import build_moves  # noqa: E402
 from mg.negotiate import draft_email  # noqa: E402
 from mg.review import audit  # noqa: E402
@@ -89,5 +89,5 @@ def supplier_email(supplier: str):
     products = demo["products"]
     increases = [f for f in demo["findings"] if f.id in demo["moves"] and products[f.sku].supplier == supplier]
     sales = load_sales()
-    units = {finding.sku: monthly_units(finding.sku, sales) for finding in increases}
+    units = {finding.sku: expected_monthly_units(products[finding.sku], sales) for finding in increases}
     return draft_email(supplier, increases, products, units)

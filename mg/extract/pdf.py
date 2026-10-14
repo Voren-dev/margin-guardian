@@ -15,6 +15,7 @@ Three rules:
 A saved answer is reused as long as the PDF has not changed (same SHA-256),
 because one extraction takes one or two minutes.
 """
+import fcntl
 import hashlib
 import json
 import os
@@ -126,7 +127,7 @@ def keys_are_set() -> bool:
 def live_reads_left() -> int:
     """How many live readings are still allowed today."""
     counter = config.LIVE_COUNTER_DIR / f"{date.today().isoformat()}.count"
-    used = int(counter.read_text()) if counter.exists() else 0
+    used = int(counter.read_text().strip() or 0) if counter.exists() else 0
     return max(0, config.LIVE_READS_PER_DAY - used)
 
 
@@ -135,11 +136,17 @@ def read_live(path: Path) -> dict:
 
     Returns the extracted data, checked against the PDF like every other reading.
     """
-    if live_reads_left() == 0:
-        raise ExtractionError("the daily limit of live readings has been reached: try again tomorrow")
     counter = config.LIVE_COUNTER_DIR / f"{date.today().isoformat()}.count"
     counter.parent.mkdir(parents=True, exist_ok=True)
-    counter.write_text(str(config.LIVE_READS_PER_DAY - live_reads_left() + 1))
+    with open(counter, "a+") as f:  # locked: two visitors at the same moment count as two
+        fcntl.flock(f, fcntl.LOCK_EX)
+        f.seek(0)
+        used = int(f.read().strip() or 0)
+        if used >= config.LIVE_READS_PER_DAY:
+            raise ExtractionError("the daily limit of live readings has been reached: try again tomorrow")
+        f.seek(0)
+        f.truncate()
+        f.write(str(used + 1))
     # one try only and a shorter wait: a visitor should not wait for retries
     return extract_and_check(path, attempts=1, timeout=LIVE_TIMEOUT_SECONDS)
 
@@ -195,6 +202,9 @@ def check_against_pdf(data: dict, text_rows: list[tuple[int, int, str]]) -> list
             problems.append(f"{code} is not in the document")
             continue
         page, row_number, text = found[0]
+        if (page, row_number) in used_rows:
+            problems.append(f"{code} was extracted twice")
+            continue
         used_rows.add((page, row_number))
         item["page"], item["row"], item["raw_text"] = page, row_number, text
 

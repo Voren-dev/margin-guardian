@@ -150,8 +150,14 @@ def reprice(
         assumptions=(
             f"New retail price {new_price:.2f} EUR (now {retail:.2f}); {ceiling_note}. "
             f"Price elasticity of {product.category}: {elasticity.value} "
-            f"(95% interval {elasticity.low} to {elasticity.high}), estimated from "
-            f"{elasticity.observations} product-months of sales."
+            f"(95% interval {elasticity.low} to {elasticity.high}"
+            f"{', a weak estimate: the interval includes zero' if elasticity.low <= 0 <= elasticity.high else ''}), "
+            f"estimated from {elasticity.observations} product-months of sales."
+            + (
+                " You end up earning more than before the increase: restoring the margin in percent "
+                "raises the margin per piece, and these customers barely react to price."
+                if yearly > 0 else ""
+            )
         ),
         calc_trace="\n".join(
             [

@@ -22,7 +22,8 @@ sys.path.insert(0, str(ROOT))
 
 from mg import llm  # noqa: E402  (load_env puts .env into the environment)
 from mg.export import new_prices_csv  # noqa: E402
-from mg.forecast import load_sales, monthly_units  # noqa: E402
+from mg.analyze import expected_monthly_units  # noqa: E402
+from mg.forecast import load_sales  # noqa: E402
 from mg.negotiate import draft_email  # noqa: E402
 from mg.report import DEMO_SUPPLIERS, HIDDEN_KINDS, identify, run_supplier  # noqa: E402
 
@@ -148,7 +149,7 @@ def negotiate_text(key: str) -> str:
     report = run_supplier(key)
     increases = report.increases()
     sales = load_sales()
-    units = {finding.sku: monthly_units(finding.sku, sales) for finding in increases}
+    units = {finding.sku: expected_monthly_units(report.products[finding.sku], sales) for finding in increases}
     draft = draft_email(report.supplier, increases, report.products, units)
     return (
         f"<b>Negotiate</b> · {html.escape(report.supplier)}\n"

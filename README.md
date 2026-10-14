@@ -51,7 +51,7 @@ arrives in the chat) or negotiate (the supplier email, not sent). Run it with
   monthly impact must agree with the costs. If anything does not match, the result is held back.
 - **Numbers are pasted, not written.** In the supplier email the model writes the sentences; the
   figures are inserted by code from the calculated table, then checked again (`mg/negotiate.py`).
-- **Click any number** and the source opens: the PDF page with that row highlighted, or the Excel row.
+- **Open any change** and its source opens next to the numbers: the PDF page with that row highlighted, or the Excel row.
 
 What it does not catch: a scanned PDF, and a pack size or minimum order read wrong (the check
 covers prices and missing rows). For those, the person looks at the highlighted source row.
@@ -74,8 +74,9 @@ python3 -m venv .venv
 ```
 
 The app works without any key: it uses the saved readings of the demo price lists in
-`data/demo/results/extract/`. With the keys in `.env` (copy `.env.example`), it can also read a
-price list again live and write the supplier email.
+`data/demo/results/extract/`, and the saved supplier emails in `data/demo/results/email/`. With the
+keys in `.env` (copy `.env.example`), it can also read a price list again live, and write the email
+for a supplier that has no saved text yet.
 
 Tests: `.venv/bin/pytest`. They include every trap listed in `data/demo/ANSWER_KEY.md`.
 

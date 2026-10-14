@@ -1,7 +1,9 @@
 """The only place that talks to the model: AMD Token Factory, OpenAI-compatible API.
 
-The model never does the maths. It is used for three things only: matching product
-names that differ, classifying price list notes, and writing text.
+The model never does the maths. Here it reads the footnotes of the price lists
+(mg/extract/pdf.py, read_note). The price lists themselves are read by the Evolus
+extractor, which runs on the same model, and the supplier email is written by the
+Evolus email tool.
 
 Rules for this endpoint, found by testing:
 - the first message is always a system message (without it Gemma does not stop);

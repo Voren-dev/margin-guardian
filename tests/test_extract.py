@@ -154,3 +154,11 @@ def test_a_malformed_answer_becomes_a_problem_not_a_crash():
     ):
         problems = check_against_pdf(bad, rows)
         assert problems, bad
+
+
+def test_a_line_extracted_twice_is_a_problem():
+    from mg.extract.pdf import check_against_pdf
+    rows = [(1, 1, "VP-10233  Front light  1  26.39")]
+    line = {"supplier_code": "VP-10233", "price": 26.39}
+    problems = check_against_pdf({"lines": [dict(line), dict(line)]}, rows)
+    assert any("twice" in problem for problem in problems)

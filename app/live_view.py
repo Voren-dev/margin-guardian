@@ -1,17 +1,30 @@
 """Lets the visitor ask for a live reading of a demo PDF, to see the model on AMD at work."""
+import json
 import time
+from datetime import datetime
 from pathlib import Path
 
 import streamlit as st
 
+from mg import config
 from mg.extract.pdf import ExtractionError, keys_are_set, live_reads_left, read_live
+
+
+MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+
+
+def read_on(path: Path) -> str:
+    """The day the saved reading of this PDF was made, e.g. '14 October 2026'."""
+    saved = json.loads((config.EXTRACT_RESULTS_DIR / f"{path.name}.json").read_text())
+    day = datetime.fromisoformat(saved["extracted_at"])
+    return f"{day.day} {MONTHS[day.month - 1]} {day.year}"  # not strftime: the server locale may not be English
 
 
 def show_live_reading(path: Path, source):
     """A button that reads the PDF again right now and compares the result with the row on screen."""
     with st.expander("Not convinced? Read this price list again, live"):
         st.write(
-            "What you see above was read on 14 October 2026. Press the button and Gemma, Google's open "
+            f"What you see above was read on {read_on(path)}. Press the button and Gemma, Google's open "
             "model, reads the PDF again now on AMD servers, through the Evolus extractor. "
             "Then code checks every price against the PDF. It takes about half a minute."
         )
