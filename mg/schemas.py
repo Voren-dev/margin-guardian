@@ -110,6 +110,7 @@ class Move(Contract):
     units_delta: float  # units sold more (+) or less (-) per year
     assumptions: str  # the assumptions used, in plain words
     calc_trace: str
+    new_retail_price_eur: float | None = None  # only for reprice: the price to put in the shop
 
 
 class AuditResult(Contract):

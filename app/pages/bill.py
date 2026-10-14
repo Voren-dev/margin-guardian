@@ -2,6 +2,7 @@
 import streamlit as st
 
 from pipeline import HIDDEN_KINDS, euro, label, load_demo
+from mg.export import new_prices_csv  # after pipeline, which puts the project on the path
 
 demo = load_demo()
 findings, moves, products = demo["findings"], demo["moves"], demo["products"]
@@ -27,6 +28,17 @@ left, middle, right = st.columns(3)
 left.metric("If you absorb", euro(total("absorb"), sign=True))
 middle.metric("If you negotiate", euro(total("negotiate"), sign=True))
 right.metric("If you reprice", euro(total("reprice"), sign=True))
+right.download_button(
+    "New prices (CSV)",
+    new_prices_csv(
+        [move for by_kind in moves.values() for move in by_kind.values()],
+        {finding.id: finding.sku for finding in findings},
+        products,
+    ),
+    file_name="margin-guardian-new-prices.csv",
+    mime="text/csv",
+    help="The prices of the reprice move, ready to import into your shop.",
+)
 
 st.divider()
 st.markdown("##### What changed")

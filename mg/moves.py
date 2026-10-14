@@ -146,6 +146,7 @@ def reprice(
         kind="reprice",
         yearly_impact_eur=round(yearly, 2),
         units_delta=round(units_delta, 1),
+        new_retail_price_eur=new_price,
         assumptions=(
             f"New retail price {new_price:.2f} EUR (now {retail:.2f}); {ceiling_note}. "
             f"Price elasticity of {product.category}: {elasticity.value} "
