@@ -36,7 +36,7 @@ def test_the_photo_becomes_price_lines_of_the_right_supplier(monkeypatch):
 
 def test_a_surcharge_needs_both_readings(monkeypatch):
     note = "dal 1 novembre 2026 maggiorazione del 4% sugli articoli con *"
-    monkeypatch.setattr(photo, "read_note", lambda text: {"surcharge_pct": 4.0, "valid_from": "2026-11-01"})
+    monkeypatch.setattr(photo, "read_note", lambda text, model=None: {"surcharge_pct": 4.0, "valid_from": "2026-11-01"})
     both = photo.photo_notes(reading(notes=[note]), reading(notes=[note]))
     one = photo.photo_notes(reading(notes=[note]), reading(notes=["maggiorazione sugli articoli con *"]))
     assert both[0].effect == {"surcharge_pct": 4.0}
@@ -55,3 +55,31 @@ def test_when_gemma_is_down_the_next_model_reads_the_photo(monkeypatch):
         return reading(("CC-A118", 18.5, 1, "*"))
     monkeypatch.setattr(photo, "ask_model", ask)
     assert photo.read_photo(b"jpeg")[4] == "Qwen3.8-Flash-Next"
+
+
+def test_when_gemma_cannot_read_the_footnote_the_backup_reads_it(monkeypatch):
+    note = "maggiorazione del 4% sugli articoli con *"
+    monkeypatch.setattr(photo, "ask_model", lambda content, mime, model: reading(("CC-A118", 18.5, 1, "*"), notes=[note]))
+    def read_note(text, model=None):
+        if model == "Gemma-4-31B-IT":
+            raise photo.llm.LLMError("HTTP 500")
+        return {"surcharge_pct": 4.0, "valid_from": None}
+    monkeypatch.setattr(photo, "read_note", read_note)
+    _, _, notes, _, model = photo.read_photo(b"jpeg")
+    assert model == "Qwen3.8-Flash-Next" and notes[0].effect == {"surcharge_pct": 4.0}
+
+
+def test_a_hanging_reading_is_not_waited_for(monkeypatch):
+    import time
+    gemma_calls = [False, True]  # the first Gemma reading hangs, the second fails at once
+
+    def ask(content, mime, model):
+        if model == "Gemma-4-31B-IT":
+            if gemma_calls.pop():
+                time.sleep(3)
+            raise photo.llm.LLMError("HTTP 500")
+        return reading(("CC-A118", 18.5, 1, "*"))
+    monkeypatch.setattr(photo, "ask_model", ask)
+    started = time.time()
+    assert photo.read_photo(b"jpeg")[4] == "Qwen3.8-Flash-Next"
+    assert time.time() - started < 2

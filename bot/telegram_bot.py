@@ -11,6 +11,7 @@ import json
 import logging
 import os
 import sys
+import threading
 import time
 import urllib.error
 import urllib.request
@@ -25,7 +26,7 @@ from mg.export import new_prices_csv  # noqa: E402
 from mg.analyze import expected_monthly_units  # noqa: E402
 from mg.forecast import load_sales  # noqa: E402
 from mg.negotiate import draft_email  # noqa: E402
-from mg.extract.photo import PhotoError, read_photo  # noqa: E402
+from mg.extract.photo import PhotoError, explain, read_photo  # noqa: E402
 from mg.report import DEMO_SUPPLIERS, HIDDEN_KINDS, SupplierReport, identify, run_supplier, supplier_of  # noqa: E402
 
 
@@ -173,7 +174,9 @@ def handle_message(tg: Telegram, message: dict):
         if photo.get("file_size", 0) > MAX_FILE_BYTES:
             tg.send(chat_id, "That photo is too big for this demo.")
             return
-        handle_photo(tg, chat_id, tg.download(photo["file_id"]), photo.get("mime_type", "image/jpeg"))
+        content = tg.download(photo["file_id"])
+        # a photo takes one or two minutes: read it on its own thread, so the bot keeps answering
+        threading.Thread(target=safe_photo, args=(tg, chat_id, content, photo.get("mime_type", "image/jpeg")), daemon=True).start()
         return
     if document:
         if document.get("file_size", 0) > MAX_FILE_BYTES:
@@ -188,6 +191,18 @@ def handle_message(tg: Telegram, message: dict):
     tg.send(chat_id, WELCOME, supplier_buttons())  # /start, /demo or any text
 
 
+def safe_photo(tg: Telegram, chat_id: int, content: bytes, mime: str):
+    """handle_photo on its own thread: an error is logged and told to the person, never lost."""
+    try:
+        handle_photo(tg, chat_id, content, mime)
+    except Exception:
+        log.exception("photo for chat %s failed", chat_id)
+        try:
+            tg.send(chat_id, "Something went wrong on my side. Try again, or use the app: " + SITE)
+        except Exception:
+            pass
+
+
 def handle_photo(tg: Telegram, chat_id: int, content: bytes, mime: str):
     """Gemma reads the photo twice; the rows both readings agree on go through the same chain as a file."""
     tg.send(chat_id, "Reading the photo with Gemma on AMD, twice, to check every number. One or two minutes...")
@@ -195,7 +210,7 @@ def handle_photo(tg: Telegram, chat_id: int, content: bytes, mime: str):
         _, lines, notes, dropped, model = read_photo(content, mime)
     except (PhotoError, llm.LLMError) as error:
         log.warning("photo not read: %s", error)
-        tg.send(chat_id, "I could not read that photo. Try again with the whole page flat and in focus.")
+        tg.send(chat_id, explain(error))
         return
     key = supplier_of(lines)
     if key is None:

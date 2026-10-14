@@ -15,7 +15,7 @@ from mg import llm  # after pipeline, which puts the project on the path
 from mg.analyze import analyze
 from mg.extract import extract_price_list
 from mg.extract.pdf import ExtractionError, keys_are_set, live_reads_left, read_pdf_price_list_live
-from mg.extract.photo import PHOTO_MODELS, PhotoError, read_photo
+from mg.extract.photo import PHOTO_MODELS, PhotoError, explain, read_photo
 from mg.match import diff_price_lists, match_to_catalog
 from mg.moves import build_moves
 from mg.report import DEMO_SUPPLIERS, identify, run_supplier, supplier_of
@@ -31,9 +31,9 @@ def what_failed(error: Exception) -> str:
         return "Today's limit of live readings on this demo is used up."
     if "refused" in str(error):
         return "The live reading did not pass the check against the PDF, so it was not used."
-    if not llm.model_answers():
-        return "AMD Token Factory is not answering right now: Gemma does not reply."
-    return "The Evolus extractor did not answer (Gemma on AMD Token Factory is up)."
+    if isinstance(error, llm.LLMError):
+        return "AMD Token Factory did not answer: Gemma could not read the footnotes."
+    return "The Evolus extractor did not answer. It runs on Gemma on AMD Token Factory, so one of the two is down."
 
 
 def read_uploaded_pdf(key: str):
@@ -42,7 +42,7 @@ def read_uploaded_pdf(key: str):
     if keys_are_set() and live_reads_left() > 0:
         started = time.time()
         try:
-            with st.spinner("Gemma on AMD is reading the PDF through the Evolus extractor, about half a minute..."):
+            with st.spinner("Gemma on AMD is reading the PDF through the Evolus extractor, usually under a minute..."):
                 lines, notes = read_pdf_price_list_live(path)
         except (ExtractionError, llm.LLMError, OSError) as error:
             note = f"⚠️ {what_failed(error)} Using the reading of this file saved on {read_on(path)}, checked the same way."
@@ -123,10 +123,8 @@ def process_photo(content: bytes, mime: str):
     with st.spinner("Gemma on AMD is reading the photo, twice, to check every number. One or two minutes..."):
         try:
             _, lines, notes, dropped, model = read_photo(content, mime)
-        except PhotoError:
-            gemma_up = llm.model_answers()
-            st.error("⚠️ " + ("AMD Token Factory is not answering right now: neither Gemma nor the backup model could read the photo."
-                              if not gemma_up else "The two readings of the photo did not agree. Try again with the whole page flat and in focus."))
+        except (PhotoError, llm.LLMError) as error:
+            st.error("⚠️ " + explain(error))
             return
     key = supplier_of(lines)
     if key is None:

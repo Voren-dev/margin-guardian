@@ -11,7 +11,7 @@ if its percentage is written in the footnote in both readings.
 import base64
 import json
 import re
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import FIRST_EXCEPTION, ThreadPoolExecutor, wait
 from datetime import date
 
 from mg import llm
@@ -47,8 +47,8 @@ def read_photo(content: bytes, mime: str = "image/jpeg") -> tuple[str, list[Pric
     """A photo -> (supplier as printed, price lines, notes, rows dropped because the readings disagreed, model used)."""
     for model in PHOTO_MODELS:
         try:
-            with ThreadPoolExecutor(max_workers=2) as pool:
-                first, second = pool.map(lambda _: ask_model(content, mime, model), range(2))
+            first, second = read_twice(content, mime, model)
+            notes = photo_notes(first, second, model)
             break
         except (llm.LLMError, PhotoError) as error:
             if model == PHOTO_MODELS[-1]:
@@ -76,7 +76,30 @@ def read_photo(content: bytes, mime: str = "image/jpeg") -> tuple[str, list[Pric
         )
         for number, row in enumerate(agreed, start=1)
     ]
-    return supplier, lines, photo_notes(first, second), dropped, model
+    return supplier, lines, notes, dropped, model
+
+
+def read_twice(content: bytes, mime: str, model: str) -> tuple[dict, dict]:
+    """Two readings at the same time. If one fails, the other is not waited for: the next model can start."""
+    pool = ThreadPoolExecutor(max_workers=2)
+    futures = [pool.submit(ask_model, content, mime, model) for _ in range(2)]
+    try:
+        done, _ = wait(futures, return_when=FIRST_EXCEPTION)
+        for future in done:
+            if future.exception() is not None:
+                raise future.exception()
+        first, second = (future.result() for future in futures)
+        return first, second
+    finally:
+        pool.shutdown(wait=False, cancel_futures=True)
+
+
+def explain(error: Exception) -> str:
+    """What went wrong with a photo, in one sentence for the person in front of the screen."""
+    text = str(error)
+    if "did not agree" in text and "no model could read" not in text:
+        return "The two readings of the photo did not agree. Try again with the whole page flat and in focus."
+    return "AMD Token Factory did not answer: neither Gemma nor the backup model could read the photo right now."
 
 
 def ask_model(content: bytes, mime: str, model: str) -> dict:
@@ -130,8 +153,12 @@ def agreed_rows(first: dict, second: dict) -> tuple[list[dict], int]:
     return agreed, len(set(one) | set(two)) - len(agreed)
 
 
-def photo_notes(first: dict, second: dict) -> list[DocumentNote]:
-    """The notes of the first reading. A surcharge counts only if both readings print it."""
+def photo_notes(first: dict, second: dict, model: str | None = None) -> list[DocumentNote]:
+    """The notes of the first reading. A surcharge counts only if both readings print it.
+
+    The footnote is read by the same model that read the photo. If it cannot be read, the
+    whole photo fails: a surcharge left out in silence would hide an increase.
+    """
     other_text = " ".join(str(note.get("text", "")) for note in second.get("notes", []) if isinstance(note, dict))
     notes = []
     for number, note in enumerate((n for n in first.get("notes", []) if isinstance(n, dict)), start=1):
@@ -140,7 +167,7 @@ def photo_notes(first: dict, second: dict) -> list[DocumentNote]:
             continue
         effect, valid_from = {}, None
         if re.search(r"\d\s*%", text):
-            answer = read_note(text)
+            answer = read_note(text, model)
             if answer["surcharge_pct"] is not None and keep_what_is_written(answer, other_text)["surcharge_pct"] is not None:
                 effect["surcharge_pct"] = answer["surcharge_pct"]
                 valid_from = date.fromisoformat(answer["valid_from"]) if answer["valid_from"] else None

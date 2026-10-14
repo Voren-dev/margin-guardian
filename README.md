@@ -3,7 +3,7 @@
 **The purchasing manager a small shop cannot afford.**
 
 Built for the AMD Developer Hackathon: ACT III (lablab.ai), Evolus Business Agents track.
-Live demo: **https://margin.voren.dev** (drop one of the demo price lists, or pick a supplier, and watch it work)
+Live demo: **https://margin.voren.dev** (drop one of the demo price lists or a photo of it, or pick a supplier, and watch it work)
 
 ## The problem
 
@@ -15,7 +15,7 @@ currencies. Nobody has time to check every line, so the increases nobody notices
 
 ## What it does
 
-1. **Reads** the new price lists (PDF and Excel) and the previous ones.
+1. **Reads** the new price lists (PDF, Excel, or a photo of a printed one) and the previous ones.
 2. **Finds what changed**: price increases, smaller packs, surcharges written only in a footnote.
 3. **Calculates the cost**: unit cost in EUR, margin before and after, cost per month and per year.
 4. **Proposes three moves** for every increase, each with its numbers:
@@ -31,8 +31,8 @@ On the demo data it finds **19 changes in 3 price lists, 7 of them hidden**, wor
 
 ## On Telegram
 
-[@MarginGuardianbot](https://t.me/MarginGuardianbot): forward one of the demo price lists (or pick a
-supplier) and get what changed, the cost in a year and three buttons: absorb, reprice (the CSV
+[@MarginGuardianbot](https://t.me/MarginGuardianbot): forward one of the demo price lists, send a photo
+of one printed on paper, or pick a supplier, and get what changed, the cost in a year and three buttons: absorb, reprice (the CSV
 arrives in the chat) or negotiate (the supplier email, not sent). Run it with
 `.venv/bin/python bot/telegram_bot.py`.
 
@@ -49,18 +49,24 @@ arrives in the chat) or negotiate (the supplier email, not sent). Run it with
   `mg/review.py` goes back to the rows it cites: each unit cost must come out of a price printed
   there, with that row's own pack size and currency, and the change, the two margins and the
   monthly impact must agree with the costs. If anything does not match, the result is held back.
+- **A photo is read twice.** There is no text in a photo to check against, so Gemma reads it twice
+  at the same time and a row counts only if both readings agree on code, price, pack and marker
+  (`mg/extract/photo.py`). If Gemma does not answer, Qwen reads it, and the app says so.
+- **When AMD does not answer, it says so.** A file dropped in the app is read again live; if the
+  extractor or Token Factory fails, the page says which one and falls back to the saved reading.
 - **Numbers are pasted, not written.** In the supplier email the model writes the sentences; the
   figures are inserted by code from the calculated table, then checked again (`mg/negotiate.py`).
 - **Open any change** and its source opens next to the numbers: the PDF page with that row highlighted, or the Excel row.
 
-What it does not catch: a scanned PDF, and a pack size or minimum order read wrong (the check
-covers prices and missing rows). For those, the person looks at the highlighted source row.
+What it does not catch: a pack size or minimum order read wrong (the check covers prices and
+missing rows), and on a photo two readings wrong in the same way. For those, the person looks at the highlighted source row.
 
 ## Built on
 
 | Piece | What runs there |
 |---|---|
-| **Gemma 4 31B on AMD Token Factory** | Reads the PDF price lists (through the Evolus extractor) and their footnotes. Open model, served on AMD GPUs |
+| **Gemma 4 31B on AMD Token Factory** | Reads the PDF price lists (through the Evolus extractor), the photos and the footnotes. Open model, served on AMD GPUs |
+| **Qwen on AMD Token Factory** | Backup reader for photos, used only when Gemma does not answer |
 | **Evolus** | Document extractor for the PDF price lists; AI tool `email` for the supplier email |
 | **Python** | Comparison, unit costs, margins, sales forecast and price elasticity (numpy), the three moves, the reviewer |
 | **Streamlit** | The app |
@@ -94,7 +100,8 @@ Tests: `.venv/bin/pytest`. They include every trap listed in `data/demo/ANSWER_K
 ## Project structure
 
 ```
-mg/extract/     reading: pdf.py (Evolus extractor + check against the PDF), xlsx.py (plain code)
+mg/extract/     reading: pdf.py (Evolus extractor + check against the PDF), xlsx.py (plain code),
+                photo.py (Gemma reads a photo twice, Qwen as backup)
 mg/match.py     old vs new price list, link to the shop catalog
 mg/analyze.py   unit cost in EUR, margin, monthly impact
 mg/forecast.py  monthly sales and price elasticity from the sales history
@@ -117,7 +124,7 @@ Everything in `data/demo/` is invented: the shop, the suppliers, the prices and 
 ## What comes next
 
 - Send the email from the shop's own mailbox, still one click to approve.
-- OCR for scanned price lists, so the check compares two independent readings.
+- Read price lists straight from the inbox, as they arrive.
 - Write the new prices straight into the shop's catalog, without a file in between.
 
 ## License

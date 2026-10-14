@@ -288,9 +288,9 @@ def file_upload_body(path: Path) -> tuple[bytes, str]:
     return head + path.read_bytes() + tail, f"multipart/form-data; boundary={boundary}"
 
 
-def read_note(text: str) -> dict:
+def read_note(text: str, model: str | None = None) -> dict:
     """Asks the model whether a footnote announces a surcharge, then checks its answer against the text."""
-    answer = llm.ask_json(NOTE_QUESTION + text, system=NOTE_SYSTEM, max_tokens=200)
+    answer = llm.ask_json(NOTE_QUESTION + text, system=NOTE_SYSTEM, model=model, max_tokens=200)
     return keep_what_is_written(answer, text)
 
 

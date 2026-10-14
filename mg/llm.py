@@ -118,11 +118,3 @@ def ask_json(user, system=DEFAULT_SYSTEM, model=None, max_tokens=800):
     except json.JSONDecodeError as error:
         raise LLMError(f"invalid JSON in the answer: {text[:200]}") from error
 
-
-def model_answers(model=DEFAULT_MODEL) -> bool:
-    """True if the model answers a one-word question right now. Used to say what failed, when something fails."""
-    try:
-        status, _, _ = send(build_payload("Reply with OK.", model=model, max_tokens=5), timeout=20)
-    except LLMError:
-        return False
-    return status == 200

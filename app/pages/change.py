@@ -2,13 +2,20 @@
 import streamlit as st
 
 from pipeline import HIDDEN_KINDS, document_path, euro, label, load_demo
+from mg.extract.photo import PHOTO_NAME  # after pipeline, which puts the project on the path
+from mg.review import audit
 from source_view import show_source
 from live_view import show_live_reading
 from trace_view import show_trace
 
 demo = load_demo()
-by_id = {finding.id: finding for finding in demo["findings"]}
-finding = by_id.get(st.session_state.get("finding_id"))
+# a reading made on the start page (a file read live, a photo) wins over the saved one
+by_id = {finding.id: (finding, None) for finding in demo["findings"]}
+for report in st.session_state.get("readings", {}).values():
+    by_id.update({finding.id: (finding, report) for finding in report.findings})
+finding, report = by_id.get(st.session_state.get("finding_id"), (None, None))
+products = report.products if report else demo["products"]
+photo = st.session_state.get("photos", {}).get(report.key) if report else None
 
 back = st.session_state.get("back_to", "pages/overview.py")
 st.page_link(back, label="← Back to the price list" if back.endswith("supplier.py") else "← Back to the overview")
@@ -16,7 +23,7 @@ if finding is None:
     st.info("Pick a change from the list.")
     st.stop()
 
-product = demo["products"][finding.sku]
+product = products[finding.sku]
 st.markdown(f"### {product.name}")
 tag = f":orange[**{label(finding)}**]" if finding.kind in HIDDEN_KINDS else label(finding)
 st.markdown(f"{product.supplier} · {tag}")
@@ -26,7 +33,12 @@ st.divider()
 st.markdown("##### Where it comes from")
 captions = ("In the footnote", "The product row") if finding.kind == "surcharge_note" else ("New price list", "Old price list")
 for source, caption in zip(reversed(finding.sources), captions):
-    show_source(document_path(source.document), source, caption)
+    if source.document == PHOTO_NAME:
+        st.caption(f"{caption} · {source.document} · row {source.row}, as both readings agreed: {source.raw_text}")
+        if photo:
+            st.image(photo, use_container_width=True)
+    else:
+        show_source(document_path(source.document), source, caption)
 
 newest = finding.sources[-1] if finding.kind != "surcharge_note" else finding.sources[0]
 if newest.document.lower().endswith(".pdf"):
@@ -35,11 +47,11 @@ if newest.document.lower().endswith(".pdf"):
 st.divider()
 st.markdown("##### How it is calculated")
 show_trace(finding.calc_trace)
-verdict = demo["verdicts"][finding.id]
+verdict = audit(finding)
 st.caption(f"✓ Checked by the reviewer: {verdict.reason}.")
 
 st.divider()
-moves = demo["moves"].get(finding.id)
+moves = (report.moves if report else demo["moves"]).get(finding.id)
 if not moves:
     st.markdown("##### Nothing to do")
     st.write(f"This price went down: you save about {euro(-finding.monthly_impact_eur)} a month.")
