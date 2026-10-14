@@ -29,6 +29,13 @@ currencies. Nobody has time to check every line, so the increases nobody notices
 On the demo data it finds **19 changes in 3 price lists, 7 of them hidden**, worth about
 **9,150 EUR a year** if nobody reacts.
 
+## On Telegram
+
+[@MarginGuardianbot](https://t.me/MarginGuardianbot): forward one of the demo price lists (or pick a
+supplier) and get what changed, the cost in a year and three buttons: absorb, reprice (the CSV
+arrives in the chat) or negotiate (the supplier email, not sent). Run it with
+`.venv/bin/python bot/telegram_bot.py`.
+
 ## How it stays honest
 
 **The AI reads and writes. The code does the math. The person signs off.**
@@ -80,6 +87,7 @@ Tests: `.venv/bin/pytest`. They include every trap listed in `data/demo/ANSWER_K
 | `AMD_MODEL` | Model on AMD GPUs, `Gemma-4-31B-IT` |
 | `EVOLUS_API_KEY` | API key of the Evolus workspace |
 | `EVOLUS_APPLICATION_ID` | Evolus space ID, sent as `X-Application-Id` |
+| `TELEGRAM_BOT_TOKEN` | Only for the Telegram bot, from BotFather |
 
 ## Project structure
 
@@ -92,6 +100,8 @@ mg/moves.py     absorb, reprice, negotiate
 mg/review.py    the reviewer
 mg/negotiate.py the supplier email
 mg/export.py    new prices as CSV
+mg/report.py    the whole chain for one supplier, used by the bot
+bot/            the Telegram bot
 app/            the Streamlit app
 data/demo/      invented shop, suppliers, prices and sales
 tests/          one file per step
