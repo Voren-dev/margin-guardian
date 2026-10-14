@@ -1,10 +1,10 @@
 {
   "document": "ciclo-componenti_listino_2026-06.pdf",
   "sha256": "6006e7283f9c361094a47ca4ff4e6b1277a4a67b712448ed6ebf0c7becd14a25",
-  "extracted_at": "2026-10-13T13:09:40+00:00",
-  "extracted_by": "Evolus document extractor on AMD Token Factory",
+  "extracted_at": "2026-10-14T10:14:29+00:00",
+  "extracted_by": "Evolus document extractor, Gemma-4-31B-IT on AMD Token Factory",
   "data": {
-    "supplier": "COMPONENTS",
+    "supplier": "CICLO COMPONENTI S.R.L.",
     "currency": "EUR",
     "valid_from": "01/06/2026",
     "lines": [
@@ -176,8 +176,20 @@
     ],
     "notes": [
       {
-        "text": "* articoli in alluminio. Prezzi IVA esclusa, resa franco nostro magazzino. Pagamento 60 gg d.f.f.m.",
+        "text": "* articoli in alluminio.",
         "applies_to_marker": "*",
+        "surcharge_pct": null,
+        "valid_from": null
+      },
+      {
+        "text": "Prezzi IVA esclusa, resa franco nostro magazzino.",
+        "applies_to_marker": "",
+        "surcharge_pct": null,
+        "valid_from": null
+      },
+      {
+        "text": "Pagamento 60 gg d.f.f.m.",
+        "applies_to_marker": "",
         "surcharge_pct": null,
         "valid_from": null
       }

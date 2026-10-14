@@ -1,8 +1,8 @@
 {
   "document": "veloparts_Q4-2026.pdf",
   "sha256": "aff66bfb20429218c9d0737655c9856fc08e80243bc9058dd6963df04793eccf",
-  "extracted_at": "2026-10-13T13:09:48+00:00",
-  "extracted_by": "Evolus document extractor on AMD Token Factory",
+  "extracted_at": "2026-10-14T10:14:08+00:00",
+  "extracted_by": "Evolus document extractor, Gemma-4-31B-IT on AMD Token Factory",
   "data": {
     "supplier": "VeloParts GmbH",
     "currency": "EUR",
@@ -219,11 +219,11 @@
       },
       {
         "supplier_code": "VP-10250",
-        "description": "LED Frontleuchte 1200lm, USB-C, Fernlicht  NEU",
+        "description": "LED Frontleuchte 1200lm, USB-C, Fernlicht",
         "price": 32.8,
         "pack_size": 1,
         "min_order_qty": 1,
-        "marker": "",
+        "marker": "NEU",
         "page": 1,
         "row": 47,
         "raw_text": "VP-10250  LED Frontleuchte 1200lm, USB-C, Fernlicht  NEU  Lights  1  32.80"
@@ -231,7 +231,13 @@
     ],
     "notes": [
       {
-        "text": "Preise netto zzgl. MwSt., ab Lager Stuttgart. Mindestbestellwert 250 EUR.",
+        "text": "Preise netto zzgl. MwSt., ab Lager Stuttgart.",
+        "applies_to_marker": "",
+        "surcharge_pct": null,
+        "valid_from": null
+      },
+      {
+        "text": "Mindestbestellwert 250 EUR.",
         "applies_to_marker": "",
         "surcharge_pct": null,
         "valid_from": null

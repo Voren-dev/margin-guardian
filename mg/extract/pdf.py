@@ -108,7 +108,7 @@ def load_or_extract(path: Path) -> dict:
         "document": path.name,
         "sha256": file_hash,
         "extracted_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        "extracted_by": "Evolus document extractor on AMD Token Factory",
+        "extracted_by": "Evolus document extractor, Gemma-4-31B-IT on AMD Token Factory",
         "data": data,
     }
     saved_path.write_text(json.dumps(saved, indent=2, ensure_ascii=False) + "\n")
@@ -243,8 +243,7 @@ def file_upload_body(path: Path) -> tuple[bytes, str]:
 
 def read_note(text: str) -> dict:
     """Asks the model whether a footnote announces a surcharge, then checks its answer against the text."""
-    # Gemma is the product model; the development model is used while its endpoint is unstable.
-    answer = llm.ask_json(NOTE_QUESTION + text, system=NOTE_SYSTEM, model=llm.DEV_MODEL, max_tokens=200)
+    answer = llm.ask_json(NOTE_QUESTION + text, system=NOTE_SYSTEM, max_tokens=200)
     return keep_what_is_written(answer, text)
 
 
