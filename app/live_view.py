@@ -22,7 +22,8 @@ def read_on(path: Path) -> str:
 
 def show_live_reading(path: Path, source):
     """A button that reads the PDF again right now and compares the result with the row on screen."""
-    with st.expander("Not convinced? Read this price list again, live"):
+    with st.container(border=True):
+        st.markdown("**Not convinced? Read this price list again, live**")
         st.write(
             f"What you see above was read on {read_on(path)}. Press the button and Gemma, Google's open "
             "model, reads the PDF again now on AMD servers, through the Evolus extractor. "

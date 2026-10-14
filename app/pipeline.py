@@ -33,16 +33,20 @@ PRICE_LISTS = [
 
 HIDDEN_KINDS = ("pack_change", "surcharge_note")
 
+# changes found by the comparison that cost nothing today, so they get no numbers: just named
+OTHER_KINDS = {"new_product": "new product", "discontinued": "discontinued", "moq_change": "minimum order changed"}
+
 
 @st.cache_data(show_spinner="Reading the price lists...")
 def load_demo():
     """Findings, their moves and the reviewer's verdicts, for the three demo suppliers."""
-    findings = []
+    findings, other_changes = [], []
     for old_name, new_name in PRICE_LISTS:
         old_lines, _ = extract_price_list(SUPPLIERS_DIR / "old" / old_name)
         new_lines, notes = extract_price_list(SUPPLIERS_DIR / "new" / new_name)
         matched = match_to_catalog(diff_price_lists(old_lines, new_lines), CATALOG_PATH)
         findings += analyze(matched, notes, new_lines)
+        other_changes += [change for change in matched if change.kind in OTHER_KINDS]
 
     verdicts = {finding.id: audit(finding) for finding in findings}
     passed = [finding for finding in findings if verdicts[finding.id].passed]
@@ -54,7 +58,10 @@ def load_demo():
         moves.setdefault(move.finding_id, {})[move.kind] = move
 
     products = {product.sku: product for product in load_catalog(CATALOG_PATH)}
-    return {"findings": passed, "held_back": held_back, "verdicts": verdicts, "moves": moves, "products": products}
+    return {
+        "findings": passed, "held_back": held_back, "verdicts": verdicts, "moves": moves, "products": products,
+        "other_changes": other_changes,
+    }
 
 
 def document_path(name: str) -> Path:
