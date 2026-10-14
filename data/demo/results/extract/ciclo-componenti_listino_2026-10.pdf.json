@@ -2,7 +2,7 @@
   "document": "ciclo-componenti_listino_2026-10.pdf",
   "sha256": "83b0621257b81437aa043e6e4783bbfb4dec316f9277869befdc24f9b1d72461",
   "extracted_at": "2026-10-14T10:13:35+00:00",
-  "extracted_by": "Evolus document extractor, Gemma-4-31B-IT on AMD Token Factory",
+  "extracted_by": "Evolus document extractor, model Gemma-4-31B-IT on AMD Token Factory",
   "data": {
     "supplier": "CICLO COMPONENTI S.R.L.",
     "currency": "EUR",

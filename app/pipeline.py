@@ -108,3 +108,11 @@ def supplier_email(supplier: str):
     sales = load_sales()
     units = {finding.sku: expected_monthly_units(products[finding.sku], sales) for finding in increases}
     return draft_email(supplier, increases, products, units)
+
+
+def report_email(report):
+    """The email to the supplier about the increases of one reading: a photo, a live reading or the saved one."""
+    sales = load_sales()
+    increases = report.increases()
+    units = {finding.sku: expected_monthly_units(report.products[finding.sku], sales) for finding in increases}
+    return draft_email(report.supplier, increases, report.products, units)

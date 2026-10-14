@@ -99,7 +99,7 @@ for finding in findings:
         tag.markdown(label(finding))
     change.markdown(f"{finding.pct_change:+.1f}%")
     cost.markdown(f"{euro(finding.monthly_impact_eur, sign=True)}/m".replace("+", "&#43;"))
-    if button.button("Details", key=finding.id, use_container_width=True):
+    if button.button("Details", key=finding.id, width="stretch"):
         open_change(finding.id)
 
 if demo["other_changes"]:

@@ -3,10 +3,9 @@ import time
 from urllib.parse import quote
 
 import streamlit as st
-import streamlit.components.v1 as components
 
 from live_view import show_live_reading
-from pipeline import HIDDEN_KINDS, OTHER_KINDS, SUPPLIERS_DIR, euro, label, load_demo, supplier_email, supplier_report
+from pipeline import HIDDEN_KINDS, OTHER_KINDS, SUPPLIERS_DIR, euro, label, report_email, supplier_report
 from mg.config import FX_TO_EUR  # after pipeline, which puts the project on the path
 from mg.export import new_prices_csv
 from mg.report import DEMO_SUPPLIERS
@@ -99,12 +98,9 @@ with changes_tab:
         tag.markdown(f":orange[**{label(finding)}**]" if finding.kind in HIDDEN_KINDS else label(finding))
         change.markdown(f"{finding.pct_change:+.1f}%")
         cost.markdown(f"{euro(finding.monthly_impact_eur, sign=True)}/m".replace("+", "&#43;"))
-        if button.button("Details", key=finding.id, use_container_width=True):
+        if button.button("Details", key=finding.id, width="stretch"):
             open_change(finding.id)
-    others = [
-        change for change in load_demo()["other_changes"]
-        if (change.new or change.old).source.document in (old_name, new_name)
-    ]
+    others = report.other_changes()
     if others:
         noticed = []
         for change in others:
@@ -138,12 +134,12 @@ with moves_tab:
             new_prices_csv(reprices, {f.id: f.sku for f in findings}, products),
             file_name=f"new-prices-{key}.csv",
             mime="text/csv",
-            use_container_width=True,
+            width="stretch",
         )
 
 with email_tab:
     try:
-        draft = supplier_email(supplier)
+        draft = report_email(report)
     except Exception:  # the checks refused the text, or Evolus could not be reached
         st.error("The email could not be prepared right now. The numbers above are unchanged.")
     else:
@@ -160,30 +156,30 @@ with email_tab:
 with document_tab:
     path = SUPPLIERS_DIR / "new" / new_name
     if photo:
-        st.image(photo, use_container_width=True)
+        st.image(photo, width="stretch")
         st.caption("The photo these numbers were read from.")
     elif path.suffix.lower() == ".pdf":
         first = increases[0].sources[-1] if increases else None
         footnotes = [finding for finding in report.hidden() if finding.kind == "surcharge_note"]
         if footnotes:  # the story of this price list is the footnote, so that is what gets highlighted
             row, note = footnotes[0].sources[0], footnotes[0].sources[-1]
-            st.image(pdf_row_image(path, row.page or 1, note.raw_text), use_container_width=True)
+            st.image(pdf_row_image(path, row.page or 1, note.raw_text), width="stretch")
             st.caption(f"The footnote that raises {len(footnotes)} products, highlighted.")
         elif first is not None and first.page:
-            st.image(pdf_row_image(path, first.page, first.raw_text), use_container_width=True)
+            st.image(pdf_row_image(path, first.page, first.raw_text), width="stretch")
             st.caption(f"The row of the biggest change, highlighted: {products[increases[0].sku].name}.")
         if first is not None and first.page:
             show_live_reading(path, first)
     else:
         st.caption("A spreadsheet: read by plain code, it is already a table.")
         if increases:
-            st.dataframe(sheet_rows(path, int(increases[0].sources[-1].row)), hide_index=True, use_container_width=True)
+            st.dataframe(sheet_rows(path, int(increases[0].sources[-1].row)), hide_index=True, width="stretch")
 
 # Another price list: back to the top of the page. Last on the page, so it runs once the page is filled.
 if st.session_state.get("last_supplier") != key:
     st.session_state["last_supplier"] = key
-    components.html(
+    st.iframe(
         "<script>const main = window.parent.document.querySelector('[data-testid=\"stMain\"]');"
         "let n = 0; const t = setInterval(() => { main.scrollTo(0, 0); if (++n > 8) clearInterval(t); }, 120);</script>",
-        height=0,
+        height=1,
     )

@@ -2,7 +2,7 @@
   "document": "veloparts_Q3-2026.pdf",
   "sha256": "06bf29c08e2f50fdc0c39c13aabd4e36e9bb1e2e150041b9daf417479d0722b4",
   "extracted_at": "2026-10-14T10:15:04+00:00",
-  "extracted_by": "Evolus document extractor, Gemma-4-31B-IT on AMD Token Factory",
+  "extracted_by": "Evolus document extractor, model Gemma-4-31B-IT on AMD Token Factory",
   "data": {
     "supplier": "VeloParts GmbH",
     "currency": "EUR",

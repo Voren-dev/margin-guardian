@@ -36,7 +36,7 @@ for source, caption in zip(reversed(finding.sources), captions):
     if source.document == PHOTO_NAME:
         st.caption(f"{caption} · {source.document} · row {source.row}, as both readings agreed: {source.raw_text}")
         if photo:
-            st.image(photo, use_container_width=True)
+            st.image(photo, width="stretch")
     else:
         show_source(document_path(source.document), source, caption)
 

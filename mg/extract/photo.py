@@ -9,10 +9,13 @@ two readings agree on its code, price, pack size and marker. A surcharge is kept
 if its percentage is written in the footnote in both readings.
 """
 import base64
+import io
 import json
 import re
 from concurrent.futures import FIRST_EXCEPTION, ThreadPoolExecutor, wait
 from datetime import date
+
+from PIL import Image, ImageOps
 
 from mg import llm
 from mg.extract.pdf import keep_what_is_written, read_note
@@ -22,6 +25,7 @@ PHOTO_NAME = "photo of the price list"
 # Gemma first. If Token Factory cannot serve it, the photo goes to the next model that reads images.
 PHOTO_MODELS = ("Gemma-4-31B-IT", "Qwen3.8-Flash-Next")
 MAX_TOKENS = 3000
+MAX_SIDE = 1600  # pixels: enough for the small print of a footnote
 TIMEOUT_SECONDS = 150  # one reading of a photo takes 50-150 seconds, depending on how busy Token Factory is
 
 SYSTEM = (
@@ -45,6 +49,7 @@ class PhotoError(Exception):
 
 def read_photo(content: bytes, mime: str = "image/jpeg") -> tuple[str, list[PriceLine], list[DocumentNote], int, str]:
     """A photo -> (supplier as printed, price lines, notes, rows dropped because the readings disagreed, model used)."""
+    content, mime = shrink(content, mime)
     for model in PHOTO_MODELS:
         try:
             first, second = read_twice(content, mime, model)
@@ -77,6 +82,19 @@ def read_photo(content: bytes, mime: str = "image/jpeg") -> tuple[str, list[Pric
         for number, row in enumerate(agreed, start=1)
     ]
     return supplier, lines, notes, dropped, model
+
+
+def shrink(content: bytes, mime: str) -> tuple[bytes, str]:
+    """A phone photo made smaller (longest side MAX_SIDE, JPEG): faster to send and to read, as legible."""
+    try:
+        image = Image.open(io.BytesIO(content))
+        image = ImageOps.exif_transpose(image).convert("RGB")  # phones store the rotation apart
+    except (OSError, ValueError):
+        return content, mime  # not an image Pillow knows: send it as it is
+    image.thumbnail((MAX_SIDE, MAX_SIDE))
+    out = io.BytesIO()
+    image.save(out, "JPEG", quality=88)
+    return out.getvalue(), "image/jpeg"
 
 
 def read_twice(content: bytes, mime: str, model: str) -> tuple[dict, dict]:

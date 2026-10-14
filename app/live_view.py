@@ -7,7 +7,7 @@ from pathlib import Path
 import streamlit as st
 
 from mg import config
-from mg.extract.pdf import ExtractionError, keys_are_set, live_reads_left, read_live
+from mg.extract.pdf import ExtractionError, extractor_model, keys_are_set, live_reads_left, read_live
 
 
 MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
@@ -20,13 +20,28 @@ def read_on(path: Path) -> str:
     return f"{day.day} {MONTHS[day.month - 1]} {day.year}"  # not strftime: the server locale may not be English
 
 
+def read_by(path: Path) -> str:
+    """Who made the saved reading of this PDF, as written when it was saved."""
+    saved = json.loads((config.EXTRACT_RESULTS_DIR / f"{path.name}.json").read_text())
+    return saved["extracted_by"]
+
+
+@st.cache_data(ttl=3600, show_spinner=False)
+def live_model() -> str:
+    """The model the Evolus extractor is set to right now, e.g. 'Gemma 4 31B on AMD Token Factory'."""
+    try:
+        return extractor_model()
+    except Exception:  # Evolus not reachable: say what the demo is built on
+        return "Gemma on AMD Token Factory"
+
+
 def show_live_reading(path: Path, source):
     """A button that reads the PDF again right now and compares the result with the row on screen."""
     with st.container(border=True):
         st.markdown("**Not convinced? Read this price list again, live**")
         st.write(
-            f"What you see above was read on {read_on(path)}. Press the button and Gemma, Google's open "
-            "model, reads the PDF again now on AMD servers, through the Evolus extractor. "
+            f"What you see above was read on {read_on(path)}. Press the button and the Evolus extractor "
+            f"reads the PDF again now, with {live_model()}. "
             "Then code checks every price against the PDF. It usually takes under a minute."
         )
         if not keys_are_set():

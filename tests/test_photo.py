@@ -27,6 +27,7 @@ def test_a_row_with_an_unreadable_price_is_left_out():
 def test_the_photo_becomes_price_lines_of_the_right_supplier(monkeypatch):
     rows = [("CC-A118", 18.5, 1, "*"), ("CC-A121", 22.9, 1, "*"), ("CC-S305", 12.4, 1, ""), ("CC-S310", 8.9, 1, "")]
     monkeypatch.setattr(photo, "ask_model", lambda content, mime, model: reading(*rows))
+    monkeypatch.setattr(photo, "shrink", lambda content, mime: (content, mime))
     supplier, lines, notes, dropped, model = photo.read_photo(b"jpeg")
     assert model == "Gemma-4-31B-IT"
     assert dropped == 0 and lines[0].currency == "EUR" and lines[0].markers == ["*"]
@@ -83,3 +84,12 @@ def test_a_hanging_reading_is_not_waited_for(monkeypatch):
     started = time.time()
     assert photo.read_photo(b"jpeg")[4] == "Qwen3.8-Flash-Next"
     assert time.time() - started < 2
+
+
+def test_a_big_phone_photo_is_made_smaller_and_upright():
+    import io
+    from PIL import Image
+    big = io.BytesIO()
+    Image.new("RGB", (4000, 3000), "white").save(big, "PNG")
+    small, mime = photo.shrink(big.getvalue(), "image/png")
+    assert mime == "image/jpeg" and max(Image.open(io.BytesIO(small)).size) == photo.MAX_SIDE

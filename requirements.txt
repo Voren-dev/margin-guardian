@@ -3,5 +3,6 @@ pytest>=8
 openpyxl>=3.1
 pypdf>=6
 numpy>=2
-streamlit>=1.40
+streamlit>=1.65  # st.iframe with HTML, width="stretch"
 pymupdf>=1.24
+pillow>=10  # photos: shrink before reading

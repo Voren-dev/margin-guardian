@@ -31,19 +31,19 @@ opened = st.session_state.setdefault("opened", set())
 with st.sidebar:
     st.markdown("### 🛡️ Margin Guardian")
     st.caption("Rideline Cycles · demo shop")
-    if st.button("＋ New price list", use_container_width=True, type="primary"):
+    if st.button("＋ New price list", width="stretch", type="primary"):
         st.switch_page("pages/home.py")
 
     st.write("")
     st.caption("PRICE LISTS RECEIVED")
     for key in SUPPLIER_KEYS:
-        report = supplier_report(key)
+        report = st.session_state.get("readings", {}).get(key) or supplier_report(key)
         selected = current.title == "Price list" and st.session_state.get("supplier_key") == key
         mark = "● " if key not in opened else ""
         if st.button(
             f"{mark}{report.supplier} · {len(report.findings)} changes",
             key=f"side-{key}",
-            use_container_width=True,
+            width="stretch",
             type="primary" if selected else "secondary",
         ):
             st.session_state["supplier_key"] = key

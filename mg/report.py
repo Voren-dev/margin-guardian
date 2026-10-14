@@ -1,7 +1,8 @@
-"""The whole chain for one demo supplier, without the app. Used by the Telegram bot.
+"""The whole chain for one demo supplier: compare, link to the catalog, calculate, review, moves.
 
-Same steps as the app: read old and new price list, compare, calculate, review, moves.
-The PDFs are not read again: the saved readings in data/demo/results/extract are used.
+Used by the app and by the Telegram bot. By default the saved readings of the demo PDFs
+(data/demo/results/extract) are used; a reading made elsewhere (a PDF read live, a photo)
+can be passed in instead.
 """
 import hashlib
 from dataclasses import dataclass, field
@@ -14,7 +15,7 @@ from mg.extract import extract_price_list
 from mg.match import diff_price_lists, match_to_catalog
 from mg.moves import build_moves
 from mg.review import audit
-from mg.schemas import DocumentNote, Finding, Move, PriceLine
+from mg.schemas import DocumentNote, Finding, MatchedChange, Move, PriceLine
 
 SUPPLIERS_DIR = Path(__file__).resolve().parent.parent / "data" / "demo" / "suppliers"
 
@@ -26,6 +27,7 @@ DEMO_SUPPLIERS = {
 }
 
 HIDDEN_KINDS = ("pack_change", "surcharge_note")
+OTHER_KINDS = ("new_product", "discontinued", "moq_change")
 
 
 @dataclass
@@ -37,6 +39,11 @@ class SupplierReport:
     held_back: list[Finding]  # refused by the reviewer
     moves: dict[str, dict[str, Move]] = field(default_factory=dict)  # finding id -> kind -> move
     products: dict[str, Product] = field(default_factory=dict)
+    changes: list[MatchedChange] = field(default_factory=list)  # everything the comparison found
+
+    def other_changes(self) -> list[MatchedChange]:
+        """Changes that cost nothing today, so they get no numbers: a new product, a dropped one, a new minimum order."""
+        return [change for change in self.changes if change.kind in OTHER_KINDS]
 
     def total(self, kind: str) -> float:
         """Yearly impact of one move over all the increases."""
@@ -50,8 +57,12 @@ class SupplierReport:
 
 
 def run_supplier(key: str, new_lines: list[PriceLine] | None = None, notes: list[DocumentNote] | None = None,
-                 new_file: str | None = None) -> SupplierReport:
-    """The chain on one demo supplier. Pass new_lines and notes to use a reading made elsewhere (a photo)."""
+                 new_file: str | None = None, complete: bool = True) -> SupplierReport:
+    """The chain on one demo supplier. Pass new_lines and notes to use a reading made elsewhere.
+
+    complete=False for a photo: a row the two readings did not agree on is missing from it,
+    so a missing row there does not mean a discontinued product.
+    """
     supplier, old_name, new_name = DEMO_SUPPLIERS[key]
     old_lines, _ = extract_price_list(SUPPLIERS_DIR / "old" / old_name)
     if new_lines is None:
@@ -59,6 +70,8 @@ def run_supplier(key: str, new_lines: list[PriceLine] | None = None, notes: list
     else:
         new_name = new_file or new_name
     matched = match_to_catalog(diff_price_lists(old_lines, new_lines), CATALOG_PATH)
+    if not complete:
+        matched = [change for change in matched if change.kind != "discontinued"]
     findings = analyze(matched, notes, new_lines)
 
     passed = [finding for finding in findings if audit(finding).passed]
@@ -70,7 +83,7 @@ def run_supplier(key: str, new_lines: list[PriceLine] | None = None, notes: list
         moves.setdefault(move.finding_id, {})[move.kind] = move
 
     products = {product.sku: product for product in load_catalog(CATALOG_PATH)}
-    return SupplierReport(key, supplier, new_name, passed, held_back, moves, products)
+    return SupplierReport(key, supplier, new_name, passed, held_back, moves, products, matched)
 
 
 def identify(content: bytes) -> str | None:

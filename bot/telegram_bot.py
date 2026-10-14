@@ -32,7 +32,7 @@ from mg.report import DEMO_SUPPLIERS, HIDDEN_KINDS, SupplierReport, identify, ru
 
 log = logging.getLogger("margin-guardian-bot")
 
-MAX_FILE_BYTES = 5 * 1024 * 1024
+MAX_FILE_BYTES = 10 * 1024 * 1024
 IMAGE_TYPES = ("image/jpeg", "image/png")
 
 # the last photo read in each chat, so the buttons under its summary use that reading
@@ -204,8 +204,8 @@ def safe_photo(tg: Telegram, chat_id: int, content: bytes, mime: str):
 
 
 def handle_photo(tg: Telegram, chat_id: int, content: bytes, mime: str):
-    """Gemma reads the photo twice; the rows both readings agree on go through the same chain as a file."""
-    tg.send(chat_id, "Reading the photo with Gemma on AMD, twice, to check every number. One or two minutes...")
+    """The photo is read twice (Gemma, or Qwen if Gemma is down); the rows both readings agree on go through the chain."""
+    tg.send(chat_id, "Reading the photo on AMD, twice, to check every number. One or two minutes...")
     try:
         _, lines, notes, dropped, model = read_photo(content, mime)
     except (PhotoError, llm.LLMError) as error:
@@ -216,7 +216,7 @@ def handle_photo(tg: Telegram, chat_id: int, content: bytes, mime: str):
     if key is None:
         tg.send(chat_id, "I read the photo, but it is not a price list of one of the three demo suppliers. Pick one:", supplier_buttons())
         return
-    report = run_supplier(key, lines, notes, "photo of the price list")
+    report = run_supplier(key, lines, notes, "photo of the price list", complete=False)
     photo_reports[chat_id] = report
     text = summary(report)
     text += f"\n\n<i>Photo read twice by {html.escape(model)} on AMD; a row counts only if both readings agree."

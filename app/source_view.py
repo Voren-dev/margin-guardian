@@ -12,9 +12,9 @@ ROWS_AROUND = 2  # rows of context shown above and below the cited row
 def show_source(path: Path, source, caption: str):
     st.caption(f"{caption} · {source.document}" + (f" · page {source.page}" if source.page else "") + f" · row {source.row}")
     if path.suffix.lower() == ".pdf":
-        st.image(pdf_row_image(path, source.page or 1, source.raw_text), use_container_width=True)
+        st.image(pdf_row_image(path, source.page or 1, source.raw_text), width="stretch")
     else:
-        st.dataframe(sheet_rows(path, int(source.row)), hide_index=True, use_container_width=True)
+        st.dataframe(sheet_rows(path, int(source.row)), hide_index=True, width="stretch")
 
 
 def pdf_row_image(path: Path, page_number: int, raw_text: str) -> bytes:
