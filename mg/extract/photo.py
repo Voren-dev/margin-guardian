@@ -1,7 +1,7 @@
 """Reader for a photo of a printed price list.
 
 The Evolus extractor reads only the text of a PDF, so a photo goes to Gemma directly,
-on AMD Token Factory: Gemma reads images.
+on AMD Token Factory: Gemma reads images. If Gemma cannot be reached, Qwen reads it.
 
 Same rules as for the PDFs, with one change. A photo has no text to check the answer
 against, so the photo is read twice, at the same time, and a row is kept only if the
@@ -19,8 +19,10 @@ from mg.extract.pdf import keep_what_is_written, read_note
 from mg.schemas import DocumentNote, PriceLine, SourceRef
 
 PHOTO_NAME = "photo of the price list"
+# Gemma first. If Token Factory cannot serve it, the photo goes to the next model that reads images.
+PHOTO_MODELS = ("Gemma-4-31B-IT", "Qwen3.8-Flash-Next")
 MAX_TOKENS = 3000
-TIMEOUT_SECONDS = 180  # one reading of a photo takes 40-60 seconds
+TIMEOUT_SECONDS = 150  # one reading of a photo takes 50-150 seconds, depending on how busy Token Factory is
 
 SYSTEM = (
     "You copy supplier price lists from photos. Copy only what is printed, never calculate "
@@ -41,10 +43,16 @@ class PhotoError(Exception):
     """The photo could not be read, or the two readings did not agree on anything."""
 
 
-def read_photo(content: bytes, mime: str = "image/jpeg") -> tuple[str, list[PriceLine], list[DocumentNote], int]:
-    """A photo -> (supplier as printed, price lines, notes, rows dropped because the readings disagreed)."""
-    with ThreadPoolExecutor(max_workers=2) as pool:
-        first, second = pool.map(lambda _: ask_gemma(content, mime), range(2))
+def read_photo(content: bytes, mime: str = "image/jpeg") -> tuple[str, list[PriceLine], list[DocumentNote], int, str]:
+    """A photo -> (supplier as printed, price lines, notes, rows dropped because the readings disagreed, model used)."""
+    for model in PHOTO_MODELS:
+        try:
+            with ThreadPoolExecutor(max_workers=2) as pool:
+                first, second = pool.map(lambda _: ask_model(content, mime, model), range(2))
+            break
+        except (llm.LLMError, PhotoError) as error:
+            if model == PHOTO_MODELS[-1]:
+                raise PhotoError(f"no model could read the photo: {error}") from error
     agreed, dropped = agreed_rows(first, second)
     if not agreed:
         raise PhotoError("the two readings of the photo did not agree on any row")
@@ -68,23 +76,23 @@ def read_photo(content: bytes, mime: str = "image/jpeg") -> tuple[str, list[Pric
         )
         for number, row in enumerate(agreed, start=1)
     ]
-    return supplier, lines, photo_notes(first, second), dropped
+    return supplier, lines, photo_notes(first, second), dropped, model
 
 
-def ask_gemma(content: bytes, mime: str) -> dict:
+def ask_model(content: bytes, mime: str, model: str) -> dict:
     image = "data:" + mime + ";base64," + base64.b64encode(content).decode()
     payload = llm.build_payload(
         [{"type": "text", "text": QUESTION}, {"type": "image_url", "image_url": {"url": image}}],
-        system=SYSTEM, max_tokens=MAX_TOKENS, json_mode=True,
+        system=SYSTEM, model=model, max_tokens=MAX_TOKENS, json_mode=True,
     )
     text = llm.complete(payload, TIMEOUT_SECONDS)
     start, end = text.find("{"), text.rfind("}")
     if start == -1 or end == -1:
-        raise PhotoError("Gemma did not answer with JSON")
+        raise PhotoError(f"{model} did not answer with JSON")
     try:
         return json.loads(text[start : end + 1])
     except json.JSONDecodeError as error:
-        raise PhotoError("Gemma answered with invalid JSON") from error
+        raise PhotoError(f"{model} answered with invalid JSON") from error
 
 
 def clean_row(row: dict) -> dict | None:

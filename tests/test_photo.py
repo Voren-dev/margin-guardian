@@ -26,8 +26,9 @@ def test_a_row_with_an_unreadable_price_is_left_out():
 
 def test_the_photo_becomes_price_lines_of_the_right_supplier(monkeypatch):
     rows = [("CC-A118", 18.5, 1, "*"), ("CC-A121", 22.9, 1, "*"), ("CC-S305", 12.4, 1, ""), ("CC-S310", 8.9, 1, "")]
-    monkeypatch.setattr(photo, "ask_gemma", lambda content, mime: reading(*rows))
-    supplier, lines, notes, dropped = photo.read_photo(b"jpeg")
+    monkeypatch.setattr(photo, "ask_model", lambda content, mime, model: reading(*rows))
+    supplier, lines, notes, dropped, model = photo.read_photo(b"jpeg")
+    assert model == "Gemma-4-31B-IT"
     assert dropped == 0 and lines[0].currency == "EUR" and lines[0].markers == ["*"]
     assert lines[0].source.document == photo.PHOTO_NAME and "18.50" in lines[0].source.raw_text
     assert supplier_of(lines) == "ciclo"
@@ -45,3 +46,12 @@ def test_a_surcharge_needs_both_readings(monkeypatch):
 def test_a_note_that_writes_the_star_refers_to_the_starred_rows():
     assert photo.note_marker({"marker": ""}, "maggiorazione del 4% sugli articoli contrassegnati con *") == "*"
     assert photo.note_marker({}, "Prezzi IVA esclusa") is None
+
+
+def test_when_gemma_is_down_the_next_model_reads_the_photo(monkeypatch):
+    def ask(content, mime, model):
+        if model == "Gemma-4-31B-IT":
+            raise photo.llm.LLMError("HTTP 500: no available workers")
+        return reading(("CC-A118", 18.5, 1, "*"))
+    monkeypatch.setattr(photo, "ask_model", ask)
+    assert photo.read_photo(b"jpeg")[4] == "Qwen3.8-Flash-Next"

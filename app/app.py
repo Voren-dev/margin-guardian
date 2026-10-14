@@ -20,7 +20,11 @@ pages = [
 current = st.navigation(pages, position="hidden")
 
 # Smaller numbers in the metric tiles, so euro amounts fit on a laptop screen.
-st.markdown("<style>[data-testid='stMetricValue']{font-size:1.7rem}</style>", unsafe_allow_html=True)
+# The top-right menu goes: its light/dark switch does nothing, the colours are fixed in config.toml.
+st.markdown(
+    "<style>[data-testid='stMetricValue']{font-size:1.7rem} [data-testid='stMainMenu']{display:none}</style>",
+    unsafe_allow_html=True,
+)
 
 opened = st.session_state.setdefault("opened", set())
 

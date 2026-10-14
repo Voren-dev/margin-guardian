@@ -3,6 +3,7 @@ import time
 from urllib.parse import quote
 
 import streamlit as st
+import streamlit.components.v1 as components
 
 from live_view import show_live_reading
 from pipeline import HIDDEN_KINDS, OTHER_KINDS, SUPPLIERS_DIR, euro, label, load_demo, supplier_email, supplier_report
@@ -15,6 +16,7 @@ SYMBOLS = {"EUR": "€", "GBP": "£"}
 COUNT_STEPS = 24  # frames of the count-up on the first view
 COUNT_PAUSE = 0.04  # seconds between frames: about one second in all
 REVEAL_PAUSE = 0.6  # seconds before each hidden change appears
+MOVE_CARD_HEIGHT = 250  # pixels: the three moves side by side, same height
 
 key = st.session_state.get("supplier_key")
 if key not in DEMO_SUPPLIERS:
@@ -113,16 +115,16 @@ with changes_tab:
 with moves_tab:
     st.caption("Euros per year, compared with your profit on these products before the new price list.")
     left, middle, right = st.columns(3)
-    with left, st.container(border=True):
+    with left, st.container(border=True, height=MOVE_CARD_HEIGHT):
         st.markdown("**Absorb it**")
         st.caption("Keep your prices, pay the increase.")
         st.markdown(f"### {euro(report.total('absorb'), sign=True)}")
-    with middle, st.container(border=True):
+    with middle, st.container(border=True, height=MOVE_CARD_HEIGHT):
         st.markdown("**Negotiate**")
         st.caption("Ask the supplier to take back half of each increase.")
         st.markdown(f"### {euro(report.total('negotiate'), sign=True)}")
         st.caption("The email is in the next tab.")
-    with right, st.container(border=True):
+    with right, st.container(border=True, height=MOVE_CARD_HEIGHT):
         st.markdown("**Reprice**")
         st.caption("Raise your prices back to your old margin, never above the cheapest competitor.")
         st.markdown(f"### {euro(report.total('reprice'), sign=True)}")
@@ -155,11 +157,26 @@ with document_tab:
     path = SUPPLIERS_DIR / "new" / new_name
     if path.suffix.lower() == ".pdf":
         first = increases[0].sources[-1] if increases else None
-        if first is not None and first.page:
+        footnotes = [finding for finding in report.hidden() if finding.kind == "surcharge_note"]
+        if footnotes:  # the story of this price list is the footnote, so that is what gets highlighted
+            row, note = footnotes[0].sources[0], footnotes[0].sources[-1]
+            st.image(pdf_row_image(path, row.page or 1, note.raw_text), use_container_width=True)
+            st.caption(f"The footnote that raises {len(footnotes)} products, highlighted.")
+        elif first is not None and first.page:
             st.image(pdf_row_image(path, first.page, first.raw_text), use_container_width=True)
             st.caption(f"The row of the biggest change, highlighted: {products[increases[0].sku].name}.")
+        if first is not None and first.page:
             show_live_reading(path, first)
     else:
         st.caption("A spreadsheet: read by plain code, it is already a table.")
         if increases:
             st.dataframe(sheet_rows(path, int(increases[0].sources[-1].row)), hide_index=True, use_container_width=True)
+
+# Another price list: back to the top of the page. Last on the page, so it runs once the page is filled.
+if st.session_state.get("last_supplier") != key:
+    st.session_state["last_supplier"] = key
+    components.html(
+        "<script>const main = window.parent.document.querySelector('[data-testid=\"stMain\"]');"
+        "let n = 0; const t = setInterval(() => { main.scrollTo(0, 0); if (++n > 8) clearInterval(t); }, 120);</script>",
+        height=0,
+    )

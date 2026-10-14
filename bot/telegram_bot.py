@@ -190,9 +190,9 @@ def handle_message(tg: Telegram, message: dict):
 
 def handle_photo(tg: Telegram, chat_id: int, content: bytes, mime: str):
     """Gemma reads the photo twice; the rows both readings agree on go through the same chain as a file."""
-    tg.send(chat_id, "Reading the photo with Gemma on AMD, twice, to check every number. About a minute...")
+    tg.send(chat_id, "Reading the photo with Gemma on AMD, twice, to check every number. One or two minutes...")
     try:
-        _, lines, notes, dropped = read_photo(content, mime)
+        _, lines, notes, dropped, model = read_photo(content, mime)
     except (PhotoError, llm.LLMError) as error:
         log.warning("photo not read: %s", error)
         tg.send(chat_id, "I could not read that photo. Try again with the whole page flat and in focus.")
@@ -204,8 +204,8 @@ def handle_photo(tg: Telegram, chat_id: int, content: bytes, mime: str):
     report = run_supplier(key, lines, notes, "photo of the price list")
     photo_reports[chat_id] = report
     text = summary(report)
-    if dropped:
-        text += f"\n\n<i>{dropped} row(s) left out: the two readings of the photo did not agree on them.</i>"
+    text += f"\n\n<i>Photo read twice by {html.escape(model)} on AMD; a row counts only if both readings agree."
+    text += f" {dropped} row(s) left out.</i>" if dropped else "</i>"
     tg.send(chat_id, text, move_buttons("photo"))
 
 
