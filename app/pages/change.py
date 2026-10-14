@@ -10,7 +10,8 @@ demo = load_demo()
 by_id = {finding.id: finding for finding in demo["findings"]}
 finding = by_id.get(st.session_state.get("finding_id"))
 
-st.page_link("pages/bill.py", label="← Back to all changes")
+back = st.session_state.get("back_to", "pages/overview.py")
+st.page_link(back, label="← Back to the price list" if back.endswith("supplier.py") else "← Back to the overview")
 if finding is None:
     st.info("Pick a change from the list.")
     st.stop()

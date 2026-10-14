@@ -1,7 +1,7 @@
 """Page 4: how it works, in one screen."""
 import streamlit as st
 
-st.page_link("pages/bill.py", label="← Back to all changes")
+st.page_link("pages/home.py", label="← Back to the start")
 st.markdown("### How it works")
 st.markdown("**The AI reads and writes. The code does the math. The person signs off.**")
 

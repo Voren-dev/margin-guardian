@@ -3,7 +3,7 @@
 **The purchasing manager a small shop cannot afford.**
 
 Built for the AMD Developer Hackathon: ACT III (lablab.ai), Evolus Business Agents track.
-Live demo: **https://margin.voren.dev**
+Live demo: **https://margin.voren.dev** (drop one of the demo price lists, or pick a supplier, and watch it work)
 
 ## The problem
 

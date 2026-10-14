@@ -20,6 +20,7 @@ from mg.match import diff_price_lists, match_to_catalog  # noqa: E402
 from mg.forecast import load_sales  # noqa: E402
 from mg.moves import build_moves  # noqa: E402
 from mg.negotiate import draft_email  # noqa: E402
+from mg.report import DEMO_SUPPLIERS, run_supplier  # noqa: E402
 from mg.review import audit  # noqa: E402
 
 SUPPLIERS_DIR = ROOT / "data" / "demo" / "suppliers"
@@ -62,6 +63,15 @@ def load_demo():
         "findings": passed, "held_back": held_back, "verdicts": verdicts, "moves": moves, "products": products,
         "other_changes": other_changes,
     }
+
+
+SUPPLIER_KEYS = list(DEMO_SUPPLIERS)
+
+
+@st.cache_data(show_spinner=False)
+def supplier_report(key: str):
+    """The whole chain for one demo supplier (see mg/report.py)."""
+    return run_supplier(key)
 
 
 def document_path(name: str) -> Path:

@@ -1,4 +1,4 @@
-"""Page 1: what happened, what it costs, what you can do, and the list of changes.
+"""Overview of all price lists: what happened, what it costs, what you can do, and the list of changes.
 
 Read top to bottom like the pitch: what arrived, the trap nobody sees, the number,
 the three moves in words, then the details.
@@ -24,6 +24,7 @@ def total(kind: str) -> float:
 
 def open_change(finding_id: str):
     st.session_state["finding_id"] = finding_id
+    st.session_state["back_to"] = "pages/overview.py"
     st.switch_page("pages/change.py")
 
 
@@ -33,8 +34,8 @@ def listed_price(cost_eur: float, source) -> str:
     return f"{SYMBOLS.get(source.currency, source.currency + ' ')}{price:.2f}"
 
 
-st.markdown("#### MARGIN GUARDIAN")
-st.caption("The purchasing manager a small shop cannot afford.")
+st.caption("OVERVIEW · all price lists received")
+st.markdown("## The purchasing manager a small shop cannot afford")
 st.write("3 suppliers sent new price lists. Every line was read, compared with the old list and checked.")
 
 # The trap nobody sees: a pack that got smaller, so the listed price went down.
