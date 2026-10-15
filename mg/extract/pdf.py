@@ -33,7 +33,7 @@ from mg.schemas import DocumentNote, PriceLine, SourceRef
 
 EVOLUS_API = "https://api.evolus.ai/api/v1"
 TIMEOUT_SECONDS = 300
-LIVE_TIMEOUT_SECONDS = 150  # the live reading on the app: with Gemma it usually takes 15-35 seconds
+LIVE_TIMEOUT_SECONDS = 60  # the live reading on the app: with Gemma it usually takes 15-35 seconds
 MAX_ATTEMPTS = 3  # how many times one PDF is sent before giving up
 
 # A printed price: digits, a dot or a comma, two decimals. Dates like 01.10.2026 do not match.
@@ -165,16 +165,19 @@ def read_live(path: Path) -> dict:
 def extract_and_check(path: Path, attempts: int = MAX_ATTEMPTS, timeout: int = TIMEOUT_SECONDS) -> dict:
     """Asks Evolus for the data until the answer agrees with the PDF, at most `attempts` times."""
     text_rows = pdf_text_rows(path)
-    problems = []
+    problems, call_error = [], None
     for _ in range(attempts):
         try:
             data = call_evolus(path, timeout)
         except ExtractionError as error:
-            problems = [str(error)]
+            call_error = error
             continue
+        call_error = None
         problems = check_against_pdf(data, text_rows)
         if not problems:
             return data
+    if call_error is not None:  # Evolus did not answer: that is not a reading refused by the check
+        raise call_error
     raise ExtractionError(f"{path.name} refused after {attempts} attempt(s): " + "; ".join(problems))
 
 
@@ -269,7 +272,7 @@ def extractor_model() -> str:
         f"{EVOLUS_API}/agents/{config.EVOLUS_EXTRACTOR_ID}",
         headers={"X-ApiKey": os.environ.get("EVOLUS_API_KEY", ""), "X-Application-Id": os.environ.get("EVOLUS_APPLICATION_ID", "")},
     )
-    with urllib.request.urlopen(request, timeout=30) as response:
+    with urllib.request.urlopen(request, timeout=5) as response:  # a short question: if Evolus is slow, do not hold the page
         agent = json.loads(response.read())
     name = agent.get("modelDisplayName") or agent.get("modelKey") or "unknown"
     # "own/..." is a model connected by us: here, AMD Token Factory

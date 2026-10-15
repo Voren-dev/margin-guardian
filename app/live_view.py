@@ -58,6 +58,9 @@ def show_live_reading(path: Path, source):
             try:
                 data = read_live(path)
             except ExtractionError as error:
+                if "refused after" not in str(error):  # Evolus did not answer: not the check's doing
+                    st.error("The Evolus extractor did not answer this time. The prices above are unchanged; try again later.")
+                    return
                 st.error(f"The reading was refused by the check: {error}")
                 return
             except Exception:  # Evolus down, timeout, an answer of an unexpected shape: no details to the visitor

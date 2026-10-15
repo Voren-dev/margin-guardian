@@ -56,7 +56,10 @@ def read_photo(content: bytes, mime: str = "image/jpeg") -> tuple[str, list[Pric
             notes = photo_notes(first, second, model)
             break
         except (llm.LLMError, PhotoError) as error:
-            if model == PHOTO_MODELS[-1]:
+            # the backup model is on the same AMD servers: if they cannot be reached at all, it would only add
+            # another wait. A timeout is different: Gemma may be busy while Qwen is free, so Qwen still tries.
+            unreachable = "network error" in str(error) and "timed out" not in str(error)
+            if model == PHOTO_MODELS[-1] or unreachable:
                 raise PhotoError(f"no model could read the photo: {error}") from error
     agreed, dropped = agreed_rows(first, second)
     if not agreed:

@@ -25,7 +25,7 @@ def what_failed(error: Exception) -> str:
     """One sentence on what failed, so the person on stage knows whom it depends on."""
     if "limit" in str(error):
         return "Today's limit of live readings on this demo is used up."
-    if "refused" in str(error):
+    if "refused after" in str(error):  # not "Connection refused": that is Evolus down
         return "The live reading did not pass the check against the PDF, so it was not used."
     if isinstance(error, llm.LLMError):
         return "AMD Token Factory did not answer: Gemma could not read the footnotes."
