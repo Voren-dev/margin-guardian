@@ -23,7 +23,7 @@ IMAGE_TYPES = {"jpg": "image/jpeg", "jpeg": "image/jpeg", "png": "image/png"}
 
 def what_failed(error: Exception) -> str:
     """One sentence on what failed, so the person on stage knows whom it depends on."""
-    if "limit" in str(error):
+    if "daily limit of live readings" in str(error):  # not a 429 of Token Factory
         return "Today's limit of live readings on this demo is used up."
     if "refused after" in str(error):  # not "Connection refused": that is Evolus down
         return "The live reading did not pass the check against the PDF, so it was not used."
@@ -38,7 +38,7 @@ def read_uploaded_pdf(key: str):
     if keys_are_set() and live_reads_left() > 0:
         started = time.time()
         try:
-            with st.spinner(f"The Evolus extractor is reading the PDF with {live_model()}, usually under a minute..."):
+            with st.spinner(f"The Evolus extractor is reading the PDF with {live_model()}, one to three minutes..."):
                 lines, notes = read_pdf_price_list_live(path)
         except (ExtractionError, llm.LLMError, OSError) as error:
             note = f"⚠️ {what_failed(error)} Using the reading of this file saved on {read_on(path)}, checked the same way."

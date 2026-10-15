@@ -33,7 +33,7 @@ from mg.schemas import DocumentNote, PriceLine, SourceRef
 
 EVOLUS_API = "https://api.evolus.ai/api/v1"
 TIMEOUT_SECONDS = 300
-LIVE_TIMEOUT_SECONDS = 60  # the live reading on the app: with Gemma it usually takes 15-35 seconds
+LIVE_TIMEOUT_SECONDS = 180  # the live reading on the app: on 15/10 the Evolus extractor took 78-170 seconds
 MAX_ATTEMPTS = 3  # how many times one PDF is sent before giving up
 
 # A printed price: digits, a dot or a comma, two decimals. Dates like 01.10.2026 do not match.
