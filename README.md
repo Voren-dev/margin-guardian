@@ -50,7 +50,9 @@ currencies. Nobody has time to check every line, so the increases nobody notices
 
 ## What it does
 
-1. **Reads** the new price lists (PDF, Excel, or a photo of a printed one) and the previous ones.
+1. **Reads** the new price lists (PDF, Excel, or a photo of a printed one) and the previous ones,
+   in the supplier's own language and currency: the demo has a German/English list in euros, an
+   Italian one in euros and an English one in pounds.
 2. **Finds what changed**: price increases, smaller packs, surcharges written only in a footnote.
 3. **Calculates the cost**: unit cost in EUR, margin before and after, cost per month and per year.
 4. **Proposes three moves** for every increase, each with its numbers:
