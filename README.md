@@ -204,6 +204,13 @@ Everything in `data/demo/` is synthetic and labelled so: the shop, the suppliers
 the sales are invented, and no real company or customer data is used. See `data/demo/README.md`.
 The method is real.
 
+## Who pays
+
+The owner of a small online shop: **49 EUR a month, the first price list free**, so the shop sees
+what it is losing before it pays. On the demo shop that is about 760 EUR a month, so the
+subscription pays for itself about fifteen times. The subscription keeps the reader, the checks
+and the models up to date. The price is our plan, not yet tested with a customer.
+
 ## What comes next
 
 - Send the email from the shop's own mailbox, still one click to approve.
