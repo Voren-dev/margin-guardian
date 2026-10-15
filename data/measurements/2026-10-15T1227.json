@@ -1,0 +1,361 @@
+{
+  "started_at": "2026-10-15T12:27:13+00:00",
+  "baseline": {
+    "pipeline": {
+      "note": "on the saved demo readings; the live reading is measured in part 3",
+      "total": {
+        "expected": 18,
+        "found": 18,
+        "found_right_size": 18,
+        "hidden_expected": 7,
+        "hidden_found": 7,
+        "missed": 0,
+        "invented": 0
+      },
+      "suppliers": {
+        "veloparts": {
+          "expected": 4,
+          "found": 4,
+          "found_right_size": 4,
+          "missed": [],
+          "invented": [],
+          "hidden_expected": 0,
+          "hidden_found": 0
+        },
+        "ciclo": {
+          "expected": 8,
+          "found": 8,
+          "found_right_size": 8,
+          "missed": [],
+          "invented": [],
+          "hidden_expected": 6,
+          "hidden_found": 6
+        },
+        "trailgear": {
+          "expected": 6,
+          "found": 6,
+          "found_right_size": 6,
+          "missed": [],
+          "invented": [],
+          "hidden_expected": 1,
+          "hidden_found": 1
+        }
+      }
+    },
+    "generic_llm": {
+      "model": "Gemma-4-31B-IT",
+      "input": "old and new price list as plain text",
+      "question": "Below are the OLD and the NEW price list of the same supplier. Which products cost us more in the new price list, and by how much in percent? Include every product that costs more for any reason. Answer {\"increases\": [{\"code\": \"supplier product code\", \"percent\": number}]}.",
+      "runs": [
+        {
+          "run": 1,
+          "at": "2026-10-15T12:27:59+00:00",
+          "total": {
+            "expected": 18,
+            "found": 17,
+            "found_right_size": 17,
+            "hidden_expected": 7,
+            "hidden_found": 6,
+            "missed": 1,
+            "invented": 0
+          },
+          "seconds": {
+            "veloparts": 4.607911594212055,
+            "ciclo": 7.9681089711375535,
+            "trailgear": 21.425375434104353
+          },
+          "suppliers": {
+            "veloparts": {
+              "expected": 4,
+              "found": 4,
+              "found_right_size": 4,
+              "missed": [],
+              "invented": [],
+              "hidden_expected": 0,
+              "hidden_found": 0,
+              "claimed": {
+                "VP-10233": 6.0,
+                "VP-10234": 3.07,
+                "VP-30108": 3.72,
+                "VP-60030": 4.22
+              }
+            },
+            "ciclo": {
+              "expected": 8,
+              "found": 8,
+              "found_right_size": 8,
+              "missed": [],
+              "invented": [],
+              "hidden_expected": 6,
+              "hidden_found": 6,
+              "claimed": {
+                "CC-A118": 4.0,
+                "CC-A121": 4.0,
+                "CC-A130": 4.0,
+                "CC-A140": 4.0,
+                "CC-B610": 4.0,
+                "CC-S305": 7.99,
+                "CC-M520": 4.0,
+                "CC-C705": 4.57
+              }
+            },
+            "trailgear": {
+              "expected": 6,
+              "found": 5,
+              "found_right_size": 5,
+              "missed": [
+                "TG-B4001"
+              ],
+              "invented": [],
+              "hidden_expected": 1,
+              "hidden_found": 0,
+              "claimed": {
+                "TG-T1001": 5.0,
+                "TG-T1002": 5.0,
+                "TG-T1010": 5.0,
+                "TG-T1020": 5.0,
+                "TG-L5001": 4.26
+              }
+            }
+          }
+        },
+        {
+          "run": 2,
+          "at": "2026-10-15T12:28:43+00:00",
+          "total": {
+            "expected": 18,
+            "found": 17,
+            "found_right_size": 17,
+            "hidden_expected": 7,
+            "hidden_found": 6,
+            "missed": 1,
+            "invented": 0
+          },
+          "seconds": {
+            "veloparts": 9.410416902974248,
+            "ciclo": 11.790985416155308,
+            "trailgear": 10.98061556299217
+          },
+          "suppliers": {
+            "veloparts": {
+              "expected": 4,
+              "found": 4,
+              "found_right_size": 4,
+              "missed": [],
+              "invented": [],
+              "hidden_expected": 0,
+              "hidden_found": 0,
+              "claimed": {
+                "VP-10233": 6.0,
+                "VP-10234": 3.07,
+                "VP-30108": 3.72,
+                "VP-60030": 4.22
+              }
+            },
+            "ciclo": {
+              "expected": 8,
+              "found": 8,
+              "found_right_size": 8,
+              "missed": [],
+              "invented": [],
+              "hidden_expected": 6,
+              "hidden_found": 6,
+              "claimed": {
+                "CC-A118": 4.0,
+                "CC-A121": 4.0,
+                "CC-A130": 4.0,
+                "CC-A140": 4.0,
+                "CC-B610": 4.0,
+                "CC-S305": 7.99,
+                "CC-M520": 4.0,
+                "CC-C705": 4.57
+              }
+            },
+            "trailgear": {
+              "expected": 6,
+              "found": 5,
+              "found_right_size": 5,
+              "missed": [
+                "TG-B4001"
+              ],
+              "invented": [],
+              "hidden_expected": 1,
+              "hidden_found": 0,
+              "claimed": {
+                "TG-T1001": 5.0,
+                "TG-T1002": 5.0,
+                "TG-T1010": 5.0,
+                "TG-T1020": 5.0,
+                "TG-L5001": 4.26
+              }
+            }
+          }
+        },
+        {
+          "run": 3,
+          "at": "2026-10-15T12:30:04+00:00",
+          "total": {
+            "expected": 18,
+            "found": 17,
+            "found_right_size": 17,
+            "hidden_expected": 7,
+            "hidden_found": 6,
+            "missed": 1,
+            "invented": 0
+          },
+          "seconds": {
+            "veloparts": 45.620896448846906,
+            "ciclo": 18.170503814006224,
+            "trailgear": 4.8178171219769865
+          },
+          "suppliers": {
+            "veloparts": {
+              "expected": 4,
+              "found": 4,
+              "found_right_size": 4,
+              "missed": [],
+              "invented": [],
+              "hidden_expected": 0,
+              "hidden_found": 0,
+              "claimed": {
+                "VP-10233": 6.0,
+                "VP-10234": 3.07,
+                "VP-30108": 3.72,
+                "VP-60030": 4.22
+              }
+            },
+            "ciclo": {
+              "expected": 8,
+              "found": 8,
+              "found_right_size": 8,
+              "missed": [],
+              "invented": [],
+              "hidden_expected": 6,
+              "hidden_found": 6,
+              "claimed": {
+                "CC-A118": 4.0,
+                "CC-A121": 4.0,
+                "CC-A130": 4.0,
+                "CC-A140": 4.0,
+                "CC-B610": 4.0,
+                "CC-S305": 7.99,
+                "CC-M520": 4.0,
+                "CC-C705": 4.57
+              }
+            },
+            "trailgear": {
+              "expected": 6,
+              "found": 5,
+              "found_right_size": 5,
+              "missed": [
+                "TG-B4001"
+              ],
+              "invented": [],
+              "hidden_expected": 1,
+              "hidden_found": 0,
+              "claimed": {
+                "TG-T1001": 5.0,
+                "TG-T1002": 5.0,
+                "TG-T1010": 5.0,
+                "TG-T1020": 5.0,
+                "TG-L5001": 4.26
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "footnote": {
+    "model": "Gemma-4-31B-IT",
+    "expected": {
+      "surcharge_pct": 4.0,
+      "valid_from": "2026-11-01"
+    },
+    "calls": [
+      {
+        "seconds": 11.1,
+        "answer": {
+          "surcharge_pct": 4.0,
+          "valid_from": "2026-11-01"
+        }
+      },
+      {
+        "seconds": 2.6,
+        "answer": {
+          "surcharge_pct": 4.0,
+          "valid_from": "2026-11-01"
+        }
+      },
+      {
+        "seconds": 68.4,
+        "answer": {
+          "surcharge_pct": 4.0,
+          "valid_from": "2026-11-01"
+        }
+      }
+    ]
+  },
+  "pdf_guard": {
+    "extractor_model": "Gemma-4-31B-IT on AMD Token Factory",
+    "readings": [
+      {
+        "document": "veloparts_Q3-2026.pdf",
+        "priced_rows_in_pdf": 20,
+        "seconds": 104.9,
+        "lines_read": 20,
+        "problems": [],
+        "stopped_by_guard": false
+      },
+      {
+        "document": "ciclo-componenti_listino_2026-06.pdf",
+        "priced_rows_in_pdf": 15,
+        "seconds": 169.8,
+        "lines_read": 15,
+        "problems": [],
+        "stopped_by_guard": false
+      },
+      {
+        "document": "veloparts_Q4-2026.pdf",
+        "priced_rows_in_pdf": 20,
+        "seconds": 88.2,
+        "lines_read": 20,
+        "problems": [],
+        "stopped_by_guard": false
+      },
+      {
+        "document": "ciclo-componenti_listino_2026-10.pdf",
+        "priced_rows_in_pdf": 15,
+        "seconds": 78.2,
+        "lines_read": 15,
+        "problems": [],
+        "stopped_by_guard": false
+      }
+    ],
+    "stopped_by_guard": 0,
+    "failed_calls": 0
+  },
+  "email": {
+    "calls": [
+      {
+        "supplier": "VeloParts GmbH",
+        "seconds": 5.2,
+        "usable": true,
+        "problem": null
+      },
+      {
+        "supplier": "Ciclo Componenti Srl",
+        "seconds": 4.1,
+        "usable": true,
+        "problem": null
+      },
+      {
+        "supplier": "TrailGear Ltd",
+        "seconds": 3.5,
+        "usable": true,
+        "problem": null
+      }
+    ]
+  },
+  "finished_at": "2026-10-15T12:39:41+00:00"
+}
