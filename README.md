@@ -142,8 +142,10 @@ this run.
 
 ## Why AMD
 
-A company's price lists and margins are exactly what it does not want to send to a closed model:
-here they are read by an open model, Gemma, served on AMD GPUs.
+Gemma is an open model: Google publishes it, but anyone can run it on their own hardware. In this
+demo it runs on AMD's shared endpoint, Token Factory. A shop that does not want its prices and
+margins to leave the house can run the same model on its own AMD GPU, without changing the code.
+With a closed model, that is not possible.
 
 ## On Telegram
 
