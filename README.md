@@ -160,6 +160,14 @@ Run it with `.venv/bin/python bot/telegram_bot.py`.
 
 ## Reproduce
 
+With Docker (the app on http://localhost:8501; keys optional, copy `.env.example` to `.env`):
+
+```bash
+docker compose up --build
+```
+
+Without Docker:
+
 ```bash
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
