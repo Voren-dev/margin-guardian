@@ -88,16 +88,19 @@ for finding in report.hidden():
         st.caption(f"…and {len(report.hidden()) - 1} more products under the same footnote, in the list below.")
         break
 
-changes_tab, moves_tab, email_tab, document_tab = st.tabs(["Changes", "Moves", "Email to the supplier", "The price list"])
+changes_tab, moves_tab, email_tab, document_tab = st.tabs(["What changed", "What to do", "Email to the supplier", "The price list"])
 
 with changes_tab:
+    head = st.columns([3.1, 2.7, 0.9, 1.3, 1.2])
+    for column, title in zip(head, ("Product", "What changed", "Price", "Costs you", "")):
+        column.caption(title.upper())
     for finding in findings:
         product = products[finding.sku]
         name, tag, change, cost, button = st.columns([3.1, 2.7, 0.9, 1.3, 1.2], vertical_alignment="center")
-        name.markdown(f"**{product.name}**  \n:gray[{product.sku}]")
+        name.markdown(f"**{product.name}**  \n:gray[code {product.sku}]")
         tag.markdown(f":orange[**{label(finding)}**]" if finding.kind in HIDDEN_KINDS else label(finding))
         change.markdown(f"{finding.pct_change:+.1f}%")
-        cost.markdown(f"{euro(finding.monthly_impact_eur, sign=True)}/m".replace("+", "&#43;"))
+        cost.markdown(f"{euro(finding.monthly_impact_eur, sign=True)} a month".replace("+", "&#43;"))
         if button.button("Details", key=finding.id, width="stretch"):
             open_change(finding.id)
     others = report.other_changes()
@@ -125,8 +128,8 @@ with moves_tab:
         st.markdown(f"### {euro(report.total('negotiate'), sign=True)}")
         st.caption("The email is in the next tab.")
     with right, st.container(border=True, height=MOVE_CARD_HEIGHT):
-        st.markdown("**Reprice**")
-        st.caption("Raise your prices back to your old margin, never above the cheapest competitor.")
+        st.markdown("**Raise your prices**")
+        st.caption("Back to your old margin, never above the cheapest competitor.")
         st.markdown(f"### {euro(report.total('reprice'), sign=True)}")
         reprices = [by_kind["reprice"] for by_kind in report.moves.values() if "reprice" in by_kind]
         st.download_button(

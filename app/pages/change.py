@@ -27,6 +27,12 @@ product = products[finding.sku]
 st.markdown(f"### {product.name}")
 tag = f":orange[**{label(finding)}**]" if finding.kind in HIDDEN_KINDS else label(finding)
 st.markdown(f"{product.supplier} · {tag}")
+per_piece = finding.new_unit_cost_eur - finding.old_unit_cost_eur
+if per_piece:  # the same thing in plain words first, for whoever does not read percentages
+    st.markdown(
+        f"**You now pay € {abs(per_piece):.2f} {'more' if per_piece > 0 else 'less'} for each piece: "
+        f"about {euro(abs(finding.monthly_impact_eur))} a month {'more' if per_piece > 0 else 'less'}.**"
+    )
 st.write(finding.rationale)
 
 st.divider()
@@ -57,9 +63,9 @@ if not moves:
     st.write(f"This price went down: you save about {euro(-finding.monthly_impact_eur)} a month.")
     st.stop()
 
-st.markdown("##### Your three moves")
+st.markdown("##### What you can do")
 st.caption("Each one compared with the yearly profit on this product before the new price list.")
-titles = {"absorb": "Absorb", "negotiate": "Negotiate", "reprice": "Reprice"}
+titles = {"absorb": "Absorb", "negotiate": "Negotiate", "reprice": "Raise prices"}
 kinds = [kind for kind in ("absorb", "negotiate", "reprice") if kind in moves]
 
 for column, kind in zip(st.columns(3), ("absorb", "negotiate", "reprice")):

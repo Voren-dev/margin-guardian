@@ -35,7 +35,7 @@ def listed_price(cost_eur: float, source) -> str:
 
 
 st.caption("OVERVIEW · all price lists received")
-st.markdown("## The purchasing manager a small shop cannot afford")
+st.markdown("## Catch every hidden price increase")
 st.write("3 suppliers sent new price lists. Every line was read, compared with the old list and checked.")
 
 # The trap nobody sees: a pack that got smaller, so the listed price went down.
@@ -69,8 +69,8 @@ with middle:
     st.caption("Ask each supplier to take back half. The email is ready in each change.")
     st.markdown(f"#### {euro(total('negotiate'), sign=True)}")
 with right:
-    st.markdown("**Reprice**")
-    st.caption("Raise your prices back to your old margin, never above the cheapest competitor.")
+    st.markdown("**Raise your prices**")
+    st.caption("Back to your old margin, never above the cheapest competitor.")
     st.markdown(f"#### {euro(total('reprice'), sign=True)}")
     st.download_button(
         "New prices (CSV)",
@@ -89,6 +89,9 @@ st.divider()
 st.markdown("##### What changed")
 st.caption("Open a change to see its row in the price list, how every number is calculated, and the email to the supplier.")
 
+head = st.columns([3.1, 2.7, 0.9, 1.3, 1.2])
+for column, title in zip(head, ("Product", "What changed", "Price", "Costs you", "")):
+    column.caption(title.upper())
 for finding in findings:
     product = products[finding.sku]
     name, tag, change, cost, button = st.columns([3.1, 2.7, 0.9, 1.3, 1.2], vertical_alignment="center")
@@ -98,7 +101,7 @@ for finding in findings:
     else:
         tag.markdown(label(finding))
     change.markdown(f"{finding.pct_change:+.1f}%")
-    cost.markdown(f"{euro(finding.monthly_impact_eur, sign=True)}/m".replace("+", "&#43;"))
+    cost.markdown(f"{euro(finding.monthly_impact_eur, sign=True)} a month".replace("+", "&#43;"))
     if button.button("Details", key=finding.id, width="stretch"):
         open_change(finding.id)
 

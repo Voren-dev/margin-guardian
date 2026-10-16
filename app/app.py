@@ -19,10 +19,22 @@ pages = [
 ]
 current = st.navigation(pages, position="hidden")
 
-# Smaller numbers in the metric tiles, so euro amounts fit on a laptop screen.
-# The top-right menu goes: its light/dark switch does nothing, the colours are fixed in config.toml.
+# Easy to read for someone who is not at ease with computers: bigger text, grey notes that are still
+# readable on the dark background, tabs that look like buttons. Smaller numbers in the metric tiles,
+# so euro amounts fit on a laptop screen. The top-right menu goes: its light/dark switch does nothing,
+# the colours are fixed in config.toml.
 st.markdown(
-    "<style>[data-testid='stMetricValue']{font-size:1.7rem} [data-testid='stMainMenu']{display:none}</style>",
+    "<style>"
+    "html{font-size:18px}"
+    "[data-testid='stCaptionContainer'],[data-testid='stCaptionContainer'] p{color:#C9C3B5 !important;font-size:0.95rem}"
+    "[data-testid='stMetricValue']{font-size:1.7rem}"
+    "[data-testid='stMainMenu']{display:none}"
+    "[data-testid='stTabs'] [role='tablist']{gap:0.5rem;border:none;box-shadow:none}"
+    "[data-testid='stTab']{border:1px solid #3A4D47;border-radius:8px;padding:0.45rem 1rem;background:#1F2E2A}"
+    "[data-testid='stTab'] p{font-size:1.05rem !important;font-weight:600}"
+    "[data-testid='stTab'][aria-selected='true']{border-color:#FFB84D;background:#2A3A35}"
+    "[data-testid='stSidebar'] button p{font-size:0.82rem;white-space:nowrap}"
+    "</style>",
     unsafe_allow_html=True,
 )
 
