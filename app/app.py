@@ -70,7 +70,8 @@ with st.sidebar:
 
 # The name of the app on every page, also when the sidebar is closed.
 st.markdown(
-    "<div style='font-size:1.6rem;font-weight:700;margin:-1rem 0 1rem 0'>🛡️ Margin Guardian</div>",
+    "<div style='text-align:center;font-size:2.1rem;font-weight:800;color:#FFB84D;letter-spacing:0.02em;"
+    "margin:-1.5rem 0 1.5rem 0;padding-bottom:0.8rem;border-bottom:1px solid #3A4D47'>🛡️ Margin Guardian</div>",
     unsafe_allow_html=True,
 )
 current.run()
