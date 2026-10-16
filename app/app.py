@@ -43,10 +43,8 @@ opened = st.session_state.setdefault("opened", set())
 with st.sidebar:
     # the name goes home too, as on most sites; "Home" is spelled out for whoever looks for it
     st.page_link("pages/home.py", label="**Margin Guardian**", icon="🛡️")
-    st.caption("Rideline Cycles · demo shop")
-    st.page_link("pages/home.py", label="Home", icon="🏠")
-    if st.button("⬆ Upload a price list", width="stretch", type="primary"):
-        st.switch_page("pages/home.py")
+    st.page_link("pages/home.py", label="Home", icon="🏠")  # where a new price list is uploaded
+    st.caption("Demo shop: Rideline Cycles, invented")
 
     st.write("")
     st.caption("DEMO PRICE LISTS, ALREADY LOADED")
