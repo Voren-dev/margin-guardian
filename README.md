@@ -7,7 +7,7 @@
 [![Pitch](https://img.shields.io/badge/pitch-PDF-FFB84D)](pitch/margin-guardian-pitch.pdf)
 
 The purchasing manager a small shop cannot afford. Built for the AMD Developer Hackathon: ACT III
-(lablab.ai), Evolus Business Agents track.
+(lablab.ai), Evolus Business Agents track. Evolus workspace: **Voren**.
 
 ```
  new price list (PDF, Excel or a photo)        old price list

@@ -24,4 +24,5 @@ st.write(
     "On a photo there is no text to check against, so two readings must agree instead: two readings "
     "wrong in the same way would pass. In those cases you decide, looking at the original row."
 )
+st.markdown("**Evolus workspace: Voren** · the extractor \"Supplier price lists\" and the email tool.")
 st.caption("Demo data: the shop, the suppliers and the prices are made up. The method is real.")
