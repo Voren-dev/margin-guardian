@@ -59,12 +59,9 @@ by_supplier: dict[str, float] = {}
 for finding in increases:
     supplier = products[finding.sku].supplier
     by_supplier[supplier] = by_supplier.get(supplier, 0) + moves[finding.id]["absorb"].yearly_impact_eur
-# rounded so the three add up to the total above (largest remainder), not one by one
-wanted = round(-total("absorb"))
-parts = {supplier: int(-amount) for supplier, amount in by_supplier.items()}
-for supplier in sorted(by_supplier, key=lambda supplier: -(-by_supplier[supplier] % 1))[: wanted - sum(parts.values())]:
-    parts[supplier] += 1
-st.markdown(" · ".join(f"{supplier} {euro(amount)}" for supplier, amount in parts.items()))
+# the same rounded amounts as on each supplier's page, so no page contradicts another;
+# "about", because rounded one by one they can miss the total by a euro
+st.markdown(" · ".join(f"{supplier} about {euro(-amount)}" for supplier, amount in by_supplier.items()))
 st.caption(f"{len(findings)} changes · {len(hidden)} of them easy to miss: a smaller pack, a surcharge in a footnote")
 
 st.write("")
