@@ -116,6 +116,18 @@ def _cost_finding(change: MatchedChange, product: Product, sales: list[Sale]) ->
     )
 
 
+MONTH_NAMES = ["January", "February", "March", "April", "May", "June",
+               "July", "August", "September", "October", "November", "December"]
+
+
+def _in_words(day) -> str:
+    """2026-11-01 -> '1 November 2026', as a person writes it (not strftime: the server locale may not be English)."""
+    try:
+        return f"{day.day} {MONTH_NAMES[day.month - 1]} {day.year}"
+    except AttributeError:  # not a date: show it as it was read
+        return str(day)
+
+
 def _surcharge_finding(
     line: PriceLine, note: DocumentNote, surcharge_pct: float, product: Product, sales: list[Sale], price_changed: bool = False
 ) -> Finding:
@@ -126,7 +138,7 @@ def _surcharge_finding(
     new_margin = margin_pct(product.retail_price_eur, real_cost)
     units = expected_monthly_units(product, sales)
     monthly_impact = (real_cost - listed_cost) * units
-    since = f" from {note.valid_from}" if note.valid_from else ""
+    since = f" from {_in_words(note.valid_from)}" if note.valid_from else ""
     retail = product.retail_price_eur
 
     return Finding(

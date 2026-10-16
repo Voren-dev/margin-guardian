@@ -29,8 +29,9 @@ tag = f":orange[**{label(finding)}**]" if finding.kind in HIDDEN_KINDS else labe
 st.markdown(f"{product.supplier} · {tag}")
 per_piece = finding.new_unit_cost_eur - finding.old_unit_cost_eur
 if per_piece:  # the same thing in plain words first, for whoever does not read percentages
+    now = "" if finding.kind == "surcharge_note" else "now "  # a footnote surcharge starts on its own date
     st.markdown(
-        f"**You now pay € {abs(per_piece):.2f} {'more' if per_piece > 0 else 'less'} for each piece: "
+        f"**You {now}pay € {abs(per_piece):.2f} {'more' if per_piece > 0 else 'less'} for each piece: "
         f"about {euro(abs(finding.monthly_impact_eur))} a month {'more' if per_piece > 0 else 'less'}.**"
     )
 st.write(finding.rationale)

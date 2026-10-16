@@ -52,6 +52,7 @@ def short(amount: float) -> str:
 
 
 best = max(("negotiate", "reprice"), key=report.total)
+BEST_LABEL = {"negotiate": "negotiate", "reprice": "raise prices"}
 # The first time a price list is opened, the numbers count up and the hidden changes appear one by one.
 counted = st.session_state.setdefault("counted", set())
 first_view = key not in counted
@@ -62,8 +63,8 @@ for step in range(1, COUNT_STEPS + 1) if first_view else [COUNT_STEPS]:
     share = step / COUNT_STEPS
     tiles[0].metric("Changes", round(len(findings) * share))
     tiles[1].metric("Easy to miss", round(len(report.hidden()) * share))
-    tiles[2].metric("Per year, as it is", short(report.total("absorb") * share))
-    tiles[3].metric(f"Per year, if you {best}", short(report.total(best) * share))
+    tiles[2].metric("Per year, if you do nothing", short(report.total("absorb") * share))
+    tiles[3].metric(f"Per year, if you {BEST_LABEL[best]}", short(report.total(best) * share))
     if step < COUNT_STEPS:
         time.sleep(COUNT_PAUSE)
 

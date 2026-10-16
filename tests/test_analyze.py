@@ -82,7 +82,7 @@ def test_aluminium_surcharge_reaches_the_six_items():
         assert finding.pct_change == pytest.approx(4.0, abs=0.01)
         assert finding.new_unit_cost_eur == pytest.approx(finding.old_unit_cost_eur * 1.04, abs=0.001)
         assert len(finding.sources) == 2  # the product row and the footnote
-        assert "2026-11-01" in finding.calc_trace
+        assert "from 1 November 2026" in finding.calc_trace
 
 
 def test_price_decrease_has_a_negative_impact():

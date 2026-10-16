@@ -81,8 +81,15 @@ def process(key: str, source: str = "demo", photo: tuple[bytes, str] | None = No
         report = run_supplier(key, lines, notes, "photo of the price list" if photo else new_name, complete=not photo)
         st.write(f"✓ Found the previous price list: {old_name}")
         time.sleep(PAUSE)
-        st.write(f"✓ Compared line by line: **{len(report.changes)} changes**")
+        priced = [change for change in report.changes if change.kind in ("price_up", "price_down", "pack_change")]
+        others = len(report.changes) - len(priced)
+        st.write(f"✓ Compared line by line: **{len(priced)} price changes**" + (f", {others} other change{'s' if others > 1 else ''}" if others else ""))
         time.sleep(PAUSE)
+        # a surcharge in a footnote leaves the listed prices alone, so the comparison above does not count it
+        noted = [finding for finding in report.findings + report.held_back if finding.kind == "surcharge_note"]
+        if noted:
+            st.write(f"✓ Read the footnotes: +{noted[0].pct_change:g}% on **{len(noted)} marked rows**")
+            time.sleep(PAUSE)
         st.write(f"✓ Linked {sum(1 for change in report.changes if change.sku)} of them to your catalog")
         time.sleep(PAUSE)
         checked = len(report.findings) + len(report.held_back)
@@ -90,7 +97,7 @@ def process(key: str, source: str = "demo", photo: tuple[bytes, str] | None = No
         time.sleep(PAUSE)
         st.write(f"✓ Reviewer: {len(report.findings)} of {checked} trace back to their source row")
         time.sleep(PAUSE)
-        st.write(f"✓ Prepared {sum(len(by_kind) for by_kind in report.moves.values())} moves: absorb, reprice, negotiate")
+        st.write(f"✓ Prepared the three moves for {len(report.increases())} increases: absorb, raise your prices, negotiate")
         time.sleep(PAUSE)
         status.update(label=f"{'Photo' if photo else new_name}: done", state="complete")
 
