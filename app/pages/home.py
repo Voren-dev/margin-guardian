@@ -138,6 +138,7 @@ st.markdown("## Upload a price list")
 st.write("Drop the price list a supplier just sent you, or a photo of it. Margin Guardian reads it, compares it with "
          "the last one, and tells you what changed, what it costs you, and what to do.")
 
+st.caption("To see a live reading on AMD, download one of the demo price lists below and drop it here.")
 uploaded = st.file_uploader("PDF, Excel or photo of a price list", type=["pdf", "xlsx", *IMAGE_TYPES], label_visibility="collapsed")
 if uploaded is not None and st.session_state.get("done_upload") != uploaded.file_id:
     st.session_state["done_upload"] = uploaded.file_id  # read each dropped file once, not on every rerun
@@ -163,6 +164,8 @@ for column, (key, (supplier, _, new_name)) in zip(st.columns(3), DEMO_SUPPLIERS.
         st.caption("Excel price list" if new_name.lower().endswith(".xlsx") else "PDF price list", help=new_name)
         if st.button("Check this price list", key=f"demo-{key}", width="stretch", type="primary"):
             st.session_state["run"] = key
+        st.download_button("Download it", (SUPPLIERS_DIR / "new" / new_name).read_bytes(), file_name=new_name,
+                           key=f"get-{key}", width="stretch")
 
 if st.session_state.get("run"):
     process(st.session_state.pop("run"))
