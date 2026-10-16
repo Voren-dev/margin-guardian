@@ -41,9 +41,9 @@ SITE = "https://margin.voren.dev"
 
 WELCOME = (
     "<b>Margin Guardian</b>\n"
-    "The purchasing manager a small shop cannot afford.\n\n"
+    "Catch every hidden price increase.\n\n"
     "Forward a supplier's price list and I tell you what changed, what it costs you in a year, "
-    "and three moves: absorb, reprice or negotiate.\n\n"
+    "and three moves: absorb it, raise your prices or negotiate.\n\n"
     "This is a demo: it knows the three suppliers of an invented bike shop. "
     "Pick one below, forward one of their price lists, or send a photo of one printed on paper.\n\n"
     f"Full app: {SITE}"
@@ -100,7 +100,7 @@ def supplier_buttons() -> list[list[tuple[str, str]]]:
 
 def move_buttons(key: str) -> list[list[tuple[str, str]]]:
     """key is a demo supplier, or "photo" for the last photo read in the chat."""
-    return [[("Absorb", f"a:{key}"), ("Reprice", f"r:{key}"), ("Negotiate", f"n:{key}")]]
+    return [[("Absorb", f"a:{key}"), ("Raise prices", f"r:{key}"), ("Negotiate", f"n:{key}")]]
 
 
 def summary(report: SupplierReport) -> str:
@@ -139,7 +139,7 @@ def reprice(tg: Telegram, chat_id: int, report: SupplierReport):
     units = sum(move.units_delta for move in moves)
     tg.send(
         chat_id,
-        f"<b>Reprice</b> · {html.escape(report.supplier)}\n"
+        f"<b>Raise your prices</b> · {html.escape(report.supplier)}\n"
         "New prices that bring the margin back, never above the cheapest competitor. "
         "A higher price sells a bit less: estimated from 24 months of sales.\n\n"
         f"Compared with before the new price list: <b>{euro(report.total('reprice'))} a year</b>, "

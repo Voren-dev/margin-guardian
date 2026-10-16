@@ -1,12 +1,12 @@
 # Margin Guardian
 
-**No price line, no margin.**
+**Catch every hidden price increase.**
 
 [![Demo](https://img.shields.io/badge/demo-margin.voren.dev-0A2A21)](https://margin.voren.dev)
 [![Bot](https://img.shields.io/badge/telegram-@MarginGuardianbot-0A2A21)](https://t.me/MarginGuardianbot)
 [![Pitch](https://img.shields.io/badge/pitch-PDF-FFB84D)](pitch/margin-guardian-pitch.pdf)
 
-Catch every hidden price increase. Built for the AMD Developer Hackathon: ACT III
+Built for the AMD Developer Hackathon: ACT III
 (lablab.ai), Evolus Business Agents track. Evolus workspace: **Voren**.
 
 **AMD calls in the code**: every request to the AMD Token Factory endpoint goes through `send()` in
@@ -68,7 +68,7 @@ currencies. Nobody has time to check every line, so the increases nobody notices
    Nothing is sent and nothing is changed: a person reads it and decides.
 
 On the demo data it finds **19 changes in 3 price lists, 7 of them hidden**, worth about
-**9,150 EUR a year** if nobody reacts.
+**9,155 EUR a year** if nobody reacts.
 
 ## Guardrails in code, not in the prompt
 

@@ -17,4 +17,4 @@ def show_trace(calc_trace: str):
             rows.append({"What": parts[0], "Formula": parts[1], "With the numbers": " = ".join(parts[2:-1]), "Result": parts[-1]})
     st.table(rows)
     for note in notes:
-        st.caption(note.capitalize())
+        st.caption(note[0].upper() + note[1:] if note else note)
