@@ -152,7 +152,8 @@ st.markdown("##### Or try one from the demo")
 for column, (key, (supplier, _, new_name)) in zip(st.columns(3), DEMO_SUPPLIERS.items()):
     with column, st.container(border=True):
         st.markdown(f"**{supplier}**")
-        st.caption(new_name)
+        # the kind of file, not its long name: one line, so the three buttons stay level
+        st.caption("Excel price list" if new_name.lower().endswith(".xlsx") else "PDF price list", help=new_name)
         if st.button("Check this price list", key=f"demo-{key}", width="stretch", type="primary"):
             st.session_state["run"] = key
 
