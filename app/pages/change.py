@@ -82,6 +82,7 @@ for column, kind in zip(st.columns(3), ("absorb", "negotiate", "reprice")):
 st.write("")
 if st.button(f"Write the email to {product.supplier}", type="primary"):
     st.session_state["supplier"] = product.supplier
+    st.session_state["email_back"] = "pages/change.py"
     st.switch_page("pages/email.py")
 st.caption("It prepares the text. Nothing is sent: you send it yourself.")
 

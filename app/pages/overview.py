@@ -73,7 +73,7 @@ with right:
     st.caption("Back to your old margin, never above the cheapest competitor.")
     st.markdown(f"#### {euro(total('reprice'), sign=True)}")
     st.download_button(
-        "New prices (CSV)",
+        "Download the new prices",
         new_prices_csv(
             [move for by_kind in moves.values() for move in by_kind.values()],
             {finding.id: finding.sku for finding in findings},
@@ -81,7 +81,7 @@ with right:
         ),
         file_name="margin-guardian-new-prices.csv",
         mime="text/csv",
-        help="The prices of the reprice move, ready to import into your shop.",
+        help="A spreadsheet to import into your shop.",
     )
 st.caption("Euros per year, compared with your profit before the new price lists.")
 

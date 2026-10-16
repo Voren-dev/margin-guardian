@@ -5,7 +5,8 @@ import streamlit as st
 
 from pipeline import report_email, supplier_email
 
-st.page_link("pages/change.py", label="← Back to the change")
+back = st.session_state.get("email_back", "pages/change.py")
+st.page_link(back, label="← Back to the price list" if back.endswith("supplier.py") else "← Back to the change")
 supplier = st.session_state.get("supplier")
 if supplier is None:
     st.info("Open a change and press 'Write the email'.")

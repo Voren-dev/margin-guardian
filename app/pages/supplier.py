@@ -15,7 +15,7 @@ SYMBOLS = {"EUR": "€", "GBP": "£"}
 COUNT_STEPS = 24  # frames of the count-up on the first view
 COUNT_PAUSE = 0.04  # seconds between frames: about one second in all
 REVEAL_PAUSE = 0.6  # seconds before each hidden change appears
-MOVE_CARD_HEIGHT = 300  # pixels: the three moves side by side, same height
+MOVE_CARD_HEIGHT = 340  # pixels: the three moves side by side, same height
 
 key = st.session_state.get("supplier_key")
 if key not in DEMO_SUPPLIERS:
@@ -126,19 +126,23 @@ with moves_tab:
         st.markdown("**Negotiate**")
         st.caption("Ask the supplier to take back half of each increase.")
         st.markdown(f"### {euro(report.total('negotiate'), sign=True)}")
-        st.caption("The email is in the next tab.")
+        if st.button("Write the email", key="negotiate-email", type="primary", width="stretch"):
+            st.session_state["supplier"] = supplier
+            st.session_state["email_back"] = "pages/supplier.py"
+            st.switch_page("pages/email.py")
     with right, st.container(border=True, height=MOVE_CARD_HEIGHT):
         st.markdown("**Raise your prices**")
         st.caption("Back to your old margin, never above the cheapest competitor.")
         st.markdown(f"### {euro(report.total('reprice'), sign=True)}")
         reprices = [by_kind["reprice"] for by_kind in report.moves.values() if "reprice" in by_kind]
         st.download_button(
-            "New prices (CSV)",
+            "Download the new prices",
             new_prices_csv(reprices, {f.id: f.sku for f in findings}, products),
             file_name=f"new-prices-{key}.csv",
             mime="text/csv",
             width="stretch",
         )
+        st.caption("A spreadsheet to import into your shop.")
 
 with email_tab:
     try:
