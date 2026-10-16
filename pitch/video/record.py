@@ -73,7 +73,7 @@ def scene_ciclo(page):
     glide(page, page.get_by_role("tab", name="The price list")); pause(page, 1500)
     scroll(page, 430, 3500)
     mark("moves")
-    glide(page, page.get_by_role("tab", name="Moves")); pause(page, 3500)
+    glide(page, page.get_by_role("tab", name="What to do")); pause(page, 3500)
     mark("email")
     glide(page, page.get_by_role("tab", name="Email to the supplier")); pause(page, 2500)
     scroll(page, 700, 4000)
