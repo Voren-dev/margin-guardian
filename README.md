@@ -6,8 +6,12 @@
 [![Bot](https://img.shields.io/badge/telegram-@MarginGuardianbot-0A2A21)](https://t.me/MarginGuardianbot)
 [![Pitch](https://img.shields.io/badge/pitch-PDF-FFB84D)](pitch/margin-guardian-pitch.pdf)
 
-The purchasing manager a small shop cannot afford. Built for the AMD Developer Hackathon: ACT III
+Catch every hidden price increase. Built for the AMD Developer Hackathon: ACT III
 (lablab.ai), Evolus Business Agents track. Evolus workspace: **Voren**.
+
+**AMD calls in the code**: every request to the AMD Token Factory endpoint goes through `send()` in
+[`mg/llm.py`](mg/llm.py) (`/chat/completions`, Gemma 4 31B). PDFs are read by the Evolus extractor
+on the same Gemma model, called in [`mg/extract/pdf.py`](mg/extract/pdf.py).
 
 ```
  new price list (PDF, Excel or a photo)        old price list
