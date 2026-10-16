@@ -15,7 +15,7 @@ SYMBOLS = {"EUR": "€", "GBP": "£"}
 COUNT_STEPS = 24  # frames of the count-up on the first view
 COUNT_PAUSE = 0.04  # seconds between frames: about one second in all
 REVEAL_PAUSE = 0.6  # seconds before each hidden change appears
-MOVE_CARD_HEIGHT = 250  # pixels: the three moves side by side, same height
+MOVE_CARD_HEIGHT = 300  # pixels: the three moves side by side, same height
 
 key = st.session_state.get("supplier_key")
 if key not in DEMO_SUPPLIERS:
