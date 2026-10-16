@@ -82,7 +82,7 @@ for finding in report.hidden():
             )
         else:
             st.markdown(f"⚠️ **{product.name}**: same listed price, but a footnote adds :orange[**{finding.pct_change:+g}%**].")
-        if st.button("Show me", key=f"hidden-{finding.id}"):
+        if st.button("Show me", key=f"hidden-{finding.id}", type="primary"):
             open_change(finding.id)
     if len(report.hidden()) > 2:
         st.caption(f"…and {len(report.hidden()) - 1} more products under the same footnote, in the list below.")

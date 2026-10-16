@@ -31,6 +31,7 @@ st.markdown(
     "[data-testid='stMainMenu']{display:none}"
     "[data-testid='stHeader']{height:1.8rem;min-height:1.8rem;background:transparent}"
     "[data-testid='stMainBlockContainer']{padding-top:2.2rem}"
+    "[data-testid='stFileUploaderDropzone'] button{background:#FFB84D;color:#16221F;border-color:#FFB84D;font-weight:600}"
     "[data-testid='stSidebarHeader']{height:2rem;margin-bottom:0}"
     "[data-testid='stSidebarUserContent']{padding-top:0.5rem}"
     "[data-testid='stTabs'] [role='tablist']{gap:0.5rem;border:none;box-shadow:none}"

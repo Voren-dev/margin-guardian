@@ -153,7 +153,7 @@ for column, (key, (supplier, _, new_name)) in zip(st.columns(3), DEMO_SUPPLIERS.
     with column, st.container(border=True):
         st.markdown(f"**{supplier}**")
         st.caption(new_name)
-        if st.button("Check this price list", key=f"demo-{key}", width="stretch"):
+        if st.button("Check this price list", key=f"demo-{key}", width="stretch", type="primary"):
             st.session_state["run"] = key
 
 if st.session_state.get("run"):
