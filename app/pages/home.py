@@ -97,8 +97,10 @@ def process(key: str, source: str = "demo", photo: tuple[bytes, str] | None = No
     # the supplier page shows this reading, not the saved one
     st.session_state.setdefault("readings", {})[key] = report
     st.session_state.setdefault("photos", {}).pop(key, None)
+    st.session_state.setdefault("photo_lines", {}).pop(key, None)
     if photo:
         st.session_state["photos"][key] = photo[2]
+        st.session_state["photo_lines"][key] = photo[1][0]  # the rows read, shown under the photo
     st.session_state["supplier_key"] = key
     st.session_state.setdefault("opened", set()).add(key)
     time.sleep(1.5 if source != "demo" else 0)  # a moment to read the first line before the page changes

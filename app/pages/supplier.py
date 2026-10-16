@@ -165,6 +165,17 @@ with document_tab:
     if photo:
         st.image(photo, width="stretch")
         st.caption("The photo these numbers were read from.")
+        read = st.session_state.get("photo_lines", {}).get(key, [])
+        if read:
+            st.dataframe(
+                [{"Code": line.supplier_code, "Article": line.description,
+                  "Price": f"{SYMBOLS.get(line.currency, line.currency + ' ')}{line.price:.2f}",
+                  "Pack": line.pack_size, "Min. order": line.min_order_qty, "Note": " ".join(line.markers)}
+                 for line in read],
+                hide_index=True, width="stretch",
+            )
+            st.caption("What the AI read from the photo: only the rows where both readings agree. "
+                       "Check it against the photo above.")
     elif path.suffix.lower() == ".pdf":
         first = increases[0].sources[-1] if increases else None
         footnotes = [finding for finding in report.hidden() if finding.kind == "surcharge_note"]
