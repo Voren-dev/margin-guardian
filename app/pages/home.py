@@ -167,5 +167,8 @@ for column, (key, (supplier, _, new_name)) in zip(st.columns(3), DEMO_SUPPLIERS.
         st.download_button("Download it", (SUPPLIERS_DIR / "new" / new_name).read_bytes(), file_name=new_name,
                            key=f"get-{key}", width="stretch")
 
+st.caption("Also on Telegram: [@MarginGuardianbot](https://t.me/MarginGuardianbot). "
+           "Pick a supplier, or forward one of the price lists above.")
+
 if st.session_state.get("run"):
     process(st.session_state.pop("run"))
