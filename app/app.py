@@ -42,7 +42,6 @@ opened = st.session_state.setdefault("opened", set())
 
 with st.sidebar:
     # the name goes home too, as on most sites; "Home" is spelled out for whoever looks for it
-    st.markdown("### 🛡️ Margin Guardian")
     st.page_link("pages/home.py", label="Home", icon="🏠")  # where a new price list is uploaded
     st.caption("Demo shop: Rideline Cycles, invented")
 
