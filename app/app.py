@@ -42,7 +42,7 @@ opened = st.session_state.setdefault("opened", set())
 
 with st.sidebar:
     # the name goes home too, as on most sites; "Home" is spelled out for whoever looks for it
-    st.page_link("pages/home.py", label="**Margin Guardian**", icon="🛡️")
+    st.markdown("### 🛡️ Margin Guardian")
     st.page_link("pages/home.py", label="Home", icon="🏠")  # where a new price list is uploaded
     st.caption("Demo shop: Rideline Cycles, invented")
 
@@ -69,4 +69,9 @@ with st.sidebar:
     st.divider()
     st.caption("Demo data: the shop, the suppliers and the prices are made up. The method is real.")
 
+# The name of the app on every page, also when the sidebar is closed.
+st.markdown(
+    "<div style='font-size:1.6rem;font-weight:700;margin:-1rem 0 1rem 0'>🛡️ Margin Guardian</div>",
+    unsafe_allow_html=True,
+)
 current.run()
