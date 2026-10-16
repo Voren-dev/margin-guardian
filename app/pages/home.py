@@ -127,7 +127,7 @@ def process_photo(content: bytes, mime: str):
     process(key, "photo", (first, (lines, notes), content))
 
 
-st.markdown("## New price list")
+st.markdown("## Upload a price list")
 st.write("Drop the price list a supplier just sent you, or a photo of it. Margin Guardian reads it, compares it with "
          "the last one, and tells you what changed, what it costs you, and what to do.")
 

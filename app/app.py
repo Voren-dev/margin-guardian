@@ -41,13 +41,15 @@ st.markdown(
 opened = st.session_state.setdefault("opened", set())
 
 with st.sidebar:
-    st.markdown("### 🛡️ Margin Guardian")
+    # the name goes home too, as on most sites; "Home" is spelled out for whoever looks for it
+    st.page_link("pages/home.py", label="**Margin Guardian**", icon="🛡️")
     st.caption("Rideline Cycles · demo shop")
-    if st.button("＋ New price list", width="stretch", type="primary"):
+    st.page_link("pages/home.py", label="Home", icon="🏠")
+    if st.button("⬆ Upload a price list", width="stretch", type="primary"):
         st.switch_page("pages/home.py")
 
     st.write("")
-    st.caption("PRICE LISTS RECEIVED")
+    st.caption("DEMO PRICE LISTS, ALREADY LOADED")
     for key in SUPPLIER_KEYS:
         report = st.session_state.get("readings", {}).get(key) or supplier_report(key)
         selected = current.title == "Price list" and st.session_state.get("supplier_key") == key
@@ -61,7 +63,7 @@ with st.sidebar:
             st.session_state["supplier_key"] = key
             opened.add(key)
             st.switch_page("pages/supplier.py")
-    st.caption("● not opened yet")
+    st.caption("Three invented suppliers, ready to open. In a real shop they would arrive by email. ● = not opened yet.")
 
     st.write("")
     st.page_link("pages/overview.py", label="Overview of all price lists", icon="📊")
