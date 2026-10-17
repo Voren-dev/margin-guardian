@@ -18,7 +18,7 @@ on the same Gemma model, called in [`mg/extract/pdf.py`](mg/extract/pdf.py).
               |                                       |
               v                                       v
    READ     Gemma 4 on AMD Token Factory (PDF via Evolus, photo read twice), Excel by code
-              |   guard: every price checked against the document
+              |   guard: every price and pack size checked against the document
               v
    COMPARE   old vs new, link to the shop catalog .............. code
               v
@@ -77,8 +77,9 @@ percentage is ever computed by a model: they come from `mg/analyze.py` and `mg/m
 number on screen comes with its calculation. On top of that, five guards, all plain code:
 
 1. **Every PDF reading is checked against the PDF** (`mg/extract/pdf.py`). Code extracts the text of
-   the PDF on its own: every price the model read must be printed on its row, no priced row may be
-   left out, no code may be invented. A failed check means a new reading; after three failures the
+   the PDF on its own: every price the model read must be printed on its row, the pack size must be
+   the number under the pack column (1 if the list has none; "Min. ord." is a minimum order, not a
+   pack), no priced row may be left out, no code may be invented. A failed check means a new reading; after three failures the
    price list is refused. During development the model once read 24.90 where the list said 9.90:
    this check stopped it, and a test replays that case (`tests/test_extract.py`).
 2. **A footnote number is kept only if it is written in the footnote** (`mg/extract/pdf.py`,
@@ -137,8 +138,9 @@ this run.
 
 ## Honest limits
 
-- **Pack size and minimum order are not checked against the document.** The PDF guard covers prices
-  and missing rows; a pack size read wrong would pass. The person sees the highlighted source row.
+- **The minimum order is not checked against the document**, and on a photo neither is the pack
+  size. In a PDF the guard checks prices, missing rows and the pack size (the number under the pack
+  column, or 1 if the list has none). The person sees the highlighted source row.
 - **On a photo, two readings wrong in the same way would pass.** Agreement is not proof.
 - **A scan with no text layer has nothing to compare with**: the PDF guard needs the text of the PDF.
 - The exchange rate is a fixed demo rate (1 GBP = 1.17 EUR), and the "negotiate" move assumes the

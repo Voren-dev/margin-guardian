@@ -7,8 +7,10 @@ turns it into PriceLine and DocumentNote.
 Three rules:
   - The model only copies what is printed. Nothing here calculates a price.
   - The answer is not trusted: plain code reads the text of the PDF on its own and
-    checks that every extracted price is printed on its row and that no priced row
-    was left out. If the check fails the extraction is tried again, then refused.
+    checks that every extracted price is printed on its row, that the pack size is
+    the one printed under the pack column (or 1 if there is no such column), and that
+    no priced row was left out. If the check fails the extraction is tried again,
+    then refused.
   - A number read from a footnote (a surcharge, a date) is kept only if it is
     literally written in that footnote. Otherwise it is dropped.
 
@@ -38,6 +40,14 @@ MAX_ATTEMPTS = 3  # how many times one PDF is sent before giving up
 
 # A printed price: digits, a dot or a comma, two decimals. Dates like 01.10.2026 do not match.
 PRICE_PATTERN = re.compile(r"(?<![\d.,/])\d+[.,]\d{2}(?![\d.,/])")
+
+# Header of the pack size column, compared without case. "Min. ord." is NOT one of them:
+# it is the minimum order (5 pz = order at least five), not how many pieces are in a pack.
+PACK_HEADERS = {"ve", "pack", "pack size", "units/pack", "qty/pack", "pcs/pack", "conf.", "confezione", "pz/conf."}
+# A pack written on the row itself, in a list without a pack column: "pack of 4", "conf. da 6".
+PACK_ON_ROW = re.compile(r"(?:pack of|box of|conf\.? da|confezione da)\s*(\d+)", re.IGNORECASE)
+# The cells of a row in the PDF text: pieces of text separated by two or more spaces.
+CELL_PATTERN = re.compile(r"\S+(?: \S+)*")
 
 NOTE_SYSTEM = (
     "You read footnotes of supplier price lists. Answer with JSON only. "
@@ -182,15 +192,91 @@ def extract_and_check(path: Path, attempts: int = MAX_ATTEMPTS, timeout: int = T
 
 
 def pdf_text_rows(path: Path) -> list[tuple[int, int, str]]:
-    """The text of the PDF, read by plain code: (page, row on the page, text) for every non-empty row."""
+    """The text of the PDF, read by plain code: (page, row on the page, text) for every non-empty row.
+
+    The spaces are kept as printed, because the pack check needs to know which column a number is in.
+    """
     rows = []
     for page_number, page in enumerate(PdfReader(path).pages, start=1):
         text = page.extract_text(extraction_mode="layout")
         for row_number, row in enumerate(text.splitlines(), start=1):
-            row = re.sub(r"\s{2,}", "  ", row).strip()
-            if row:
-                rows.append((page_number, row_number, row))
+            if row.strip():
+                rows.append((page_number, row_number, row.rstrip()))
     return rows
+
+
+def compact(text: str) -> str:
+    """A row of the PDF with every run of spaces made two spaces: what is saved as raw_text."""
+    return re.sub(r"\s{2,}", "  ", text).strip()
+
+
+def cells(text: str) -> list[tuple[float, str]]:
+    """The cells of a row as (centre on the row, text)."""
+    return [((m.start() + m.end()) / 2, m.group()) for m in CELL_PATTERN.finditer(text)]
+
+
+def pack_column_headers(text_rows: list[tuple[int, int, str]]) -> dict[tuple[int, int], list[tuple[float, str]]]:
+    """The header rows that have a pack column, by (page, row): their cells.
+
+    A header row has no price and one of its cells is a pack header (PACK_HEADERS).
+    """
+    headers = {}
+    for page, row_number, text in text_rows:
+        if PRICE_PATTERN.search(text):
+            continue
+        row_cells = cells(text)
+        if any(cell.lower() in PACK_HEADERS for _, cell in row_cells):
+            headers[(page, row_number)] = row_cells
+    return headers
+
+
+def printed_pack(text: str, header_cells: list[tuple[float, str]]) -> int | None:
+    """The number printed under the pack column of this row, None if there is none.
+
+    Every cell of the row goes to the header whose centre is nearest; the pack column must get one number.
+    """
+    pack_centre = next(centre for centre, cell in header_cells if cell.lower() in PACK_HEADERS)
+    under_pack = []
+    for centre, cell in cells(text):
+        nearest = min(header_cells, key=lambda header: abs(header[0] - centre))
+        if nearest[0] == pack_centre:
+            under_pack.append(cell)
+    if len(under_pack) != 1 or not re.fullmatch(r"\d+", under_pack[0]):
+        return None
+    return int(under_pack[0])
+
+
+def check_pack(item: dict, page: int, row_number: int, text: str, headers: dict) -> str | None:
+    """Checks the pack size of one extracted line against its row. Returns the problem, None if fine.
+
+    With a pack column above the row (the nearest header on this page, else on an earlier page),
+    the pack size must be the number printed under it. Without one it must be 1, unless the row
+    itself says "pack of N" or similar: then it must be N.
+    """
+    code = item["supplier_code"]
+    try:
+        pack = float(item.get("pack_size"))
+    except (TypeError, ValueError):
+        return f"{code}: pack size {item.get('pack_size')!r} is not a number"
+    if pack != int(pack) or pack < 1:
+        return f"{code}: pack size {item.get('pack_size')!r} is not a whole number of pieces"
+    item["pack_size"] = int(pack)
+
+    above = [key for key in headers if key < (page, row_number)]
+    if above:
+        printed = printed_pack(text, headers[max(above)])
+        if printed is None:
+            return f"{code}: no pack size printed under the pack column ({compact(text)})"
+        if printed != item["pack_size"]:
+            return f"{code}: pack size {item['pack_size']} but {printed} is printed under the pack column ({compact(text)})"
+        return None
+
+    written = PACK_ON_ROW.search(text)
+    expected = int(written.group(1)) if written else 1
+    if item["pack_size"] != expected:
+        where = f'"{written.group()}" on the row' if written else "the list has no pack column"
+        return f"{code}: pack size {item['pack_size']} but {where} ({compact(text)})"
+    return None
 
 
 def check_against_pdf(data: dict, text_rows: list[tuple[int, int, str]]) -> list[str]:
@@ -200,6 +286,7 @@ def check_against_pdf(data: dict, text_rows: list[tuple[int, int, str]]) -> list
     """
     problems = []
     used_rows = set()
+    headers = pack_column_headers(text_rows)
 
     for item in data.get("lines") or []:
         code = item.get("supplier_code") if isinstance(item, dict) else None
@@ -220,16 +307,20 @@ def check_against_pdf(data: dict, text_rows: list[tuple[int, int, str]]) -> list
             problems.append(f"{code} was extracted twice")
             continue
         used_rows.add((page, row_number))
-        item["page"], item["row"], item["raw_text"] = page, row_number, text
+        item["page"], item["row"], item["raw_text"] = page, row_number, compact(text)
 
         printed_prices = [float(price.replace(",", ".")) for price in PRICE_PATTERN.findall(text)]
         item["price"] = price
         if price not in printed_prices:
-            problems.append(f"{code}: price {item['price']} is not printed on its row ({text})")
+            problems.append(f"{code}: price {item['price']} is not printed on its row ({compact(text)})")
+
+        pack_problem = check_pack(item, page, row_number, text, headers)
+        if pack_problem:
+            problems.append(pack_problem)
 
     for page, row_number, text in text_rows:
         if PRICE_PATTERN.search(text) and (page, row_number) not in used_rows:
-            problems.append(f"a row with a price was not extracted: {text}")
+            problems.append(f"a row with a price was not extracted: {compact(text)}")
     return problems
 
 

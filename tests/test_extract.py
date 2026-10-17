@@ -86,7 +86,7 @@ PDF_ROWS = [
 
 
 def answer(*lines):
-    return {"lines": [{"supplier_code": code, "price": price} for code, price in lines]}
+    return {"lines": [{"supplier_code": code, "price": price, "pack_size": 1} for code, price in lines]}
 
 
 def test_a_correct_answer_passes_the_check():
@@ -159,6 +159,66 @@ def test_a_malformed_answer_becomes_a_problem_not_a_crash():
 def test_a_line_extracted_twice_is_a_problem():
     from mg.extract.pdf import check_against_pdf
     rows = [(1, 1, "VP-10233  Front light  1  26.39")]
-    line = {"supplier_code": "VP-10233", "price": 26.39}
+    line = {"supplier_code": "VP-10233", "price": 26.39, "pack_size": 1}
     problems = check_against_pdf({"lines": [dict(line), dict(line)]}, rows)
     assert any("twice" in problem for problem in problems)
+
+
+# --- the pack size: under the pack column if there is one, 1 otherwise (rows with the spacing of the PDF) ---
+
+PACK_ROWS = [
+    (1, 7, "     Art.-Nr.             Bezeichnung / Description                 Kategorie             VE         Netto EUR"),
+    (1, 9, "     VP-60010             Satteltasche S, 0,6 L                     Bags                        1              9.90"),
+    (1, 11, "     VP-60011             Flickzeug, 10 Stück                       Bags                       10              4.80"),
+]
+MIN_ORDER_ROWS = [
+    (1, 6, "     Codice             Articolo                                   Prezzo netto             Min. ord."),
+    (1, 8, "     CC-G401            Manopole ergonomiche con blocco                 € 7,80             20 pz"),
+]
+
+
+def test_the_pack_printed_under_its_column_passes():
+    from mg.extract.pdf import check_against_pdf
+
+    data = {"lines": [{"supplier_code": "VP-60010", "price": 9.90, "pack_size": 1},
+                      {"supplier_code": "VP-60011", "price": 4.80, "pack_size": 10}]}
+    assert check_against_pdf(data, PACK_ROWS) == []
+    assert data["lines"][1]["raw_text"] == "VP-60011  Flickzeug, 10 Stück  Bags  10  4.80"
+
+
+def test_a_wrong_pack_is_caught():
+    from mg.extract.pdf import check_against_pdf
+
+    data = {"lines": [{"supplier_code": "VP-60010", "price": 9.90, "pack_size": 1},
+                      {"supplier_code": "VP-60011", "price": 4.80, "pack_size": 1}]}
+    problems = check_against_pdf(data, PACK_ROWS)
+    assert len(problems) == 1 and "VP-60011" in problems[0] and "10 is printed" in problems[0]
+
+
+def test_the_minimum_order_is_not_taken_for_a_pack():
+    from mg.extract.pdf import check_against_pdf
+
+    good = {"lines": [{"supplier_code": "CC-G401", "price": 7.80, "pack_size": 1}]}
+    assert check_against_pdf(good, MIN_ORDER_ROWS) == []
+    bad = {"lines": [{"supplier_code": "CC-G401", "price": 7.80, "pack_size": 20}]}
+    problems = check_against_pdf(bad, MIN_ORDER_ROWS)
+    assert len(problems) == 1 and "no pack column" in problems[0]
+
+
+def test_a_pack_written_on_the_row_must_match():
+    from mg.extract.pdf import check_against_pdf
+
+    rows = [(1, 1, "     TG-B4001     Brake pads, pack of 2        5.10")]
+    assert check_against_pdf({"lines": [{"supplier_code": "TG-B4001", "price": 5.10, "pack_size": 2}]}, rows) == []
+    problems = check_against_pdf({"lines": [{"supplier_code": "TG-B4001", "price": 5.10, "pack_size": 4}]}, rows)
+    assert len(problems) == 1 and "pack of 2" in problems[0]
+
+
+def test_a_pack_that_is_not_a_whole_number_is_a_problem():
+    from mg.extract.pdf import check_against_pdf
+
+    for bad in (None, "two", 2.5, 0):
+        data = {"lines": [{"supplier_code": "VP-60010", "price": 9.90, "pack_size": bad},
+                          {"supplier_code": "VP-60011", "price": 4.80, "pack_size": 10}]}
+        problems = check_against_pdf(data, PACK_ROWS)
+        assert len(problems) == 1 and "VP-60010" in problems[0], bad
