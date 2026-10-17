@@ -251,17 +251,16 @@ def test_a_header_on_two_rows_finds_the_pack():
     assert len(problems) == 1 and "12 is printed" in problems[0]
 
 
-def test_an_empty_pack_cell_is_one_only_if_no_number_is_loose():
+def test_an_empty_pack_cell_is_refused():
     from mg.extract.pdf import check_against_pdf
 
-    rows = PACK_ROWS + [(1, 13, "     VP-60012             Bottle cage                               Bags                                       4.10")]
     lines = [{"supplier_code": "VP-60010", "price": 9.90, "pack_size": 1},
              {"supplier_code": "VP-60011", "price": 4.80, "pack_size": 10}]
-    assert check_against_pdf({"lines": lines + [{"supplier_code": "VP-60012", "price": 4.10, "pack_size": 1}]}, rows) == []
-    problems = check_against_pdf({"lines": lines + [{"supplier_code": "VP-60012", "price": 4.10, "pack_size": 6}]}, rows)
-    assert len(problems) == 1 and "VP-60012" in problems[0] and "1 is printed" in problems[0]
-    # a bare number in the wrong column: the pack cannot be told, so it is not taken as 1
-    rows = PACK_ROWS + [(1, 13, "     VP-60012             Bottle cage                               Bags   12                                  4.10")]
+    rows = PACK_ROWS + [(1, 13, "     VP-60012             Bottle cage                               Bags                                       4.10")]
+    problems = check_against_pdf({"lines": lines + [{"supplier_code": "VP-60012", "price": 4.10, "pack_size": 1}]}, rows)
+    assert len(problems) == 1 and "VP-60012" in problems[0] and "no pack size printed" in problems[0]
+    # a pack printed with its unit, right-aligned, ends up nearer to the price: still refused, never taken as 1
+    rows = PACK_ROWS + [(1, 13, "     VP-60012             Bottle cage                               Bags                          12 pz        4.10")]
     problems = check_against_pdf({"lines": lines + [{"supplier_code": "VP-60012", "price": 4.10, "pack_size": 1}]}, rows)
     assert len(problems) == 1 and "VP-60012" in problems[0]
 
@@ -289,3 +288,17 @@ def test_a_section_title_with_pack_word_is_not_a_header():
         (1, 4, "     CC-G401            Manopole ergonomiche con blocco                 € 7,80"),
     ]
     assert check_against_pdf({"lines": [{"supplier_code": "CC-G401", "price": 7.80, "pack_size": 1}]}, rows) == []
+
+
+def test_a_translated_second_header_row_keeps_the_pack_column():
+    from mg.extract.pdf import check_against_pdf
+
+    rows = [PACK_ROWS[0],
+            (1, 8, "     Code                 Description                               Category              Qty        Net EUR")] + PACK_ROWS[1:]
+    good = {"lines": [{"supplier_code": "VP-60010", "price": 9.90, "pack_size": 1},
+                      {"supplier_code": "VP-60011", "price": 4.80, "pack_size": 10}]}
+    assert check_against_pdf(good, rows) == []
+    bad = {"lines": [{"supplier_code": "VP-60010", "price": 9.90, "pack_size": 1},
+                     {"supplier_code": "VP-60011", "price": 4.80, "pack_size": 1}]}
+    problems = check_against_pdf(bad, rows)
+    assert len(problems) == 1 and "10 is printed" in problems[0]

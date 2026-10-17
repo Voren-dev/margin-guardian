@@ -248,10 +248,13 @@ def table_headers(text_rows: list[tuple[int, int, str]]) -> dict[tuple[int, int]
 
     A header row has no price, has three cells or more (or one that names the price, "EUR", "Netto")
     and one of its cells is a pack header (PACK_HEADERS) or a code header (CODE_HEADERS). The cell
-    count keeps out a section title like "Zubehör  VE  Bags"; the code header lets a second table
-    without a pack column end the pack column of the table above.
+    count keeps out a section title like "Zubehör  VE"; the code header lets a second table
+    without a pack column end the pack column of the table above. A row without a pack column right
+    under one that has it (two rows at most) is the second row of the same header, often its
+    translation ("Code  Description  Qty  Net EUR"), and does not end the pack column.
     """
     headers = {}
+    last = None
     for page, row_number, text in text_rows:
         if PRICE_PATTERN.search(text):
             continue
@@ -259,32 +262,29 @@ def table_headers(text_rows: list[tuple[int, int, str]]) -> dict[tuple[int, int]
         if len(row_cells) < 3 and not any(PRICE_HEADER_WORD.search(cell) for _, cell in row_cells):
             continue
         if any(pack_header(cell) or header_name(cell) in CODE_HEADERS for _, cell in row_cells):
+            if (last and last[0] == page and row_number - last[1] <= 2
+                    and has_pack_column(headers[last]) and not has_pack_column(row_cells)):
+                continue
             headers[(page, row_number)] = row_cells
+            last = (page, row_number)
     return headers
 
 
 def printed_pack(text: str, header_cells: list[tuple[float, str]]) -> int | None:
-    """The number printed under the pack column of this row, None if it cannot be told.
+    """The number printed under the pack column of this row, None if there is none.
 
     Every cell of the row goes to the header whose centre is nearest; the pack column must get one number.
     Only cells made of digits count: a description that ends up nearer to the pack column (a header on
     two rows, a long text) does not hide the number, while two numbers under it are still a problem.
-    An empty pack cell means 1, but only if nothing at all is under the pack column and no cell of the
-    row is a bare number: otherwise the number may have landed in the wrong column, and 1 could let a
-    wrong pack through.
+    An empty pack cell is not taken as 1: a pack printed with its unit ("12 pz") can land in another
+    column, and 1 would let it through. The row is refused instead.
     """
     pack_centre = next(centre for centre, cell in header_cells if pack_header(cell))
-    row_cells = cells(text)
-    anything_under_pack = False
     under_pack = []
-    for centre, cell in row_cells:
+    for centre, cell in cells(text):
         nearest = min(header_cells, key=lambda header: abs(header[0] - centre))
-        if nearest[0] == pack_centre:
-            anything_under_pack = True
-            if re.fullmatch(r"\d+", cell):
-                under_pack.append(cell)
-    if not anything_under_pack and not any(re.fullmatch(r"\d+", cell) for _, cell in row_cells):
-        return 1
+        if nearest[0] == pack_centre and re.fullmatch(r"\d+", cell):
+            under_pack.append(cell)
     if len(under_pack) != 1:
         return None
     return int(under_pack[0])
@@ -294,7 +294,7 @@ def check_pack(item: dict, page: int, row_number: int, text: str, headers: dict)
     """Checks the pack size of one extracted line against its row. Returns the problem, None if fine.
 
     If the nearest table header above the row (on this page, else on an earlier page) has a pack
-    column, the pack size must be the number printed under it (an empty cell is 1, see printed_pack).
+    column, the pack size must be the number printed under it.
     Without one it must be 1, unless the row itself says "pack of N" or similar: then it must be N.
     """
     code = item["supplier_code"]
