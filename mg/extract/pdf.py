@@ -53,11 +53,14 @@ PACK_HEADERS = {
 # Header of the code or description column: a header row without a pack column (a second table, a
 # services section) says that the rows under it have no pack column. Compared like PACK_HEADERS.
 CODE_HEADERS = {
-    "code", "product code", "codice", "articolo", "art-nr", "artnr", "art nr", "artikelnummer",
+    "code", "product code", "item code", "item no", "sku", "codice", "codice articolo", "cod articolo",
+    "articolo", "art-nr", "artnr", "art nr", "art-no", "artikel-nr", "artikelnr", "artikelnummer",
     "artikel", "description", "descrizione", "bezeichnung",
 }
-# A cell that names the price column: a header row has three cells or more, or one of these.
-PRICE_HEADER_WORD = re.compile(r"\b(?:price|prezzo|preis|netto|net|eur|gbp|chf|usd)\b", re.IGNORECASE)
+# A cell that names the price column ("Netto EUR", "Prezzo", "€"): see table_headers.
+PRICE_HEADER_WORD = re.compile(
+    r"€|\b(?:price|prices|prezzo|prezzi|listino|preis|preise|netto|net|eur|gbp|chf|usd|uvp|rrp)\b", re.IGNORECASE
+)
 # A pack written on the row itself, in a list without a pack column: "pack of 4", "conf. da 6".
 PACK_ON_ROW = re.compile(r"(?:pack of|box of|conf\.? da|confezione da)\s*(\d+)", re.IGNORECASE)
 # The cells of a row in the PDF text: pieces of text separated by two or more spaces.
@@ -246,10 +249,11 @@ def has_pack_column(header_cells: list[tuple[float, str]]) -> bool:
 def table_headers(text_rows: list[tuple[int, int, str]]) -> dict[tuple[int, int], list[tuple[float, str]]]:
     """The header rows of the tables, by (page, row): their cells.
 
-    A header row has no price, has three cells or more (or one that names the price, "EUR", "Netto")
-    and one of its cells is a pack header (PACK_HEADERS) or a code header (CODE_HEADERS). The cell
-    count keeps out a section title like "Zubehör  VE"; the code header lets a second table
-    without a pack column end the pack column of the table above. A row without a pack column right
+    A header row has no price, one of its cells is a pack header (PACK_HEADERS) or a code header
+    (CODE_HEADERS), and it names the price column ("EUR", "Netto", "Prezzo") or has a code header
+    and three cells or more. That keeps out a section title like "Zubehör  VE  Bags", which names
+    no price and no code. The code header lets a second table without a pack column end the pack
+    column of the table above. A row without a pack column right
     under one that has it (two rows at most) is the second row of the same header, often its
     translation ("Code  Description  Qty  Net EUR"), and does not end the pack column.
     """
@@ -259,9 +263,11 @@ def table_headers(text_rows: list[tuple[int, int, str]]) -> dict[tuple[int, int]
         if PRICE_PATTERN.search(text):
             continue
         row_cells = cells(text)
-        if len(row_cells) < 3 and not any(PRICE_HEADER_WORD.search(cell) for _, cell in row_cells):
+        names_price = any(PRICE_HEADER_WORD.search(cell) for _, cell in row_cells)
+        names_code = any(header_name(cell) in CODE_HEADERS for _, cell in row_cells)
+        if not names_price and not (names_code and len(row_cells) >= 3):
             continue
-        if any(pack_header(cell) or header_name(cell) in CODE_HEADERS for _, cell in row_cells):
+        if names_code or any(pack_header(cell) for _, cell in row_cells):
             if (last and last[0] == page and row_number - last[1] <= 2
                     and has_pack_column(headers[last]) and not has_pack_column(row_cells)):
                 continue

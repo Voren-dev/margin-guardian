@@ -286,8 +286,26 @@ def test_a_section_title_with_pack_word_is_not_a_header():
         (1, 1, "     Codice             Articolo                                   Prezzo netto"),
         (1, 3, "     Zubehör  VE"),
         (1, 4, "     CC-G401            Manopole ergonomiche con blocco                 € 7,80"),
+        (1, 6, "     Zubehör            VE                                         Bags"),
+        (1, 7, "     CC-G402            Borraccia 750 ml                                € 5,40"),
     ]
-    assert check_against_pdf({"lines": [{"supplier_code": "CC-G401", "price": 7.80, "pack_size": 1}]}, rows) == []
+    lines = [{"supplier_code": "CC-G401", "price": 7.80, "pack_size": 1},
+             {"supplier_code": "CC-G402", "price": 5.40, "pack_size": 1}]
+    assert check_against_pdf({"lines": lines}, rows) == []
+
+
+def test_more_names_of_the_code_column_start_a_table():
+    from mg.extract.pdf import check_against_pdf
+
+    for code_header in ("Artikel-Nr.", "Item No.", "SKU", "Codice articolo"):
+        rows = PACK_ROWS + [
+            (1, 14, f"     {code_header:<20} Service                                                            Netto EUR"),
+            (1, 16, "     VP-90001             Workshop check                                                         25.00"),
+        ]
+        lines = [{"supplier_code": "VP-60010", "price": 9.90, "pack_size": 1},
+                 {"supplier_code": "VP-60011", "price": 4.80, "pack_size": 10},
+                 {"supplier_code": "VP-90001", "price": 25.00, "pack_size": 1}]
+        assert check_against_pdf({"lines": lines}, rows) == [], code_header
 
 
 def test_a_translated_second_header_row_keeps_the_pack_column():
