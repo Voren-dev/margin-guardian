@@ -217,8 +217,35 @@ def test_a_pack_written_on_the_row_must_match():
 def test_a_pack_that_is_not_a_whole_number_is_a_problem():
     from mg.extract.pdf import check_against_pdf
 
-    for bad in (None, "two", 2.5, 0):
+    for bad in (None, "two", 2.5, 0, float("inf"), float("nan"), "Infinity"):
         data = {"lines": [{"supplier_code": "VP-60010", "price": 9.90, "pack_size": bad},
                           {"supplier_code": "VP-60011", "price": 4.80, "pack_size": 10}]}
         problems = check_against_pdf(data, PACK_ROWS)
         assert len(problems) == 1 and "VP-60010" in problems[0], bad
+
+
+def test_the_pack_header_is_recognised_in_its_variants():
+    from mg.extract.pdf import check_against_pdf
+
+    for header in ("VPE", "VE (Stk.)", "VE*", "Conf", "Pz/conf", "Pack Qty", "Inhalt"):
+        rows = [(1, 7, PACK_ROWS[0][2].replace("VE        ", header.ljust(10)[:10], 1))] + PACK_ROWS[1:]
+        good = {"lines": [{"supplier_code": "VP-60010", "price": 9.90, "pack_size": 1},
+                          {"supplier_code": "VP-60011", "price": 4.80, "pack_size": 10}]}
+        assert check_against_pdf(good, rows) == [], header
+        bad = {"lines": [{"supplier_code": "VP-60010", "price": 9.90, "pack_size": 1},
+                         {"supplier_code": "VP-60011", "price": 4.80, "pack_size": 1}]}
+        problems = check_against_pdf(bad, rows)
+        assert len(problems) == 1 and "10 is printed" in problems[0], header
+
+
+def test_a_header_on_two_rows_finds_the_pack():
+    from mg.extract.pdf import check_against_pdf
+
+    rows = [
+        (1, 1, "  Code      Description              Units/      Price"),
+        (1, 2, "                                       Pack        EUR"),
+        (1, 3, "  TG-1      Brake cable, steel         12          4.10"),
+    ]
+    assert check_against_pdf({"lines": [{"supplier_code": "TG-1", "price": 4.10, "pack_size": 12}]}, rows) == []
+    problems = check_against_pdf({"lines": [{"supplier_code": "TG-1", "price": 4.10, "pack_size": 1}]}, rows)
+    assert len(problems) == 1 and "12 is printed" in problems[0]

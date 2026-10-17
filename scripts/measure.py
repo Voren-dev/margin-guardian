@@ -75,7 +75,7 @@ def now() -> str:
 def price_list_text(path: Path) -> str:
     """The price list as plain text, the way someone would paste it into a chatbot."""
     if path.suffix == ".pdf":
-        return "\n".join(text for _, _, text in pdf.pdf_text_rows(path))
+        return "\n".join(pdf.compact(text) for _, _, text in pdf.pdf_text_rows(path))
     rows = load_workbook(path, data_only=True).active.iter_rows(values_only=True)
     return "\n".join(" | ".join("" if cell is None else str(cell) for cell in row) for row in rows)
 

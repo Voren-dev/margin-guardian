@@ -20,6 +20,7 @@ because one extraction takes one or two minutes.
 import fcntl
 import hashlib
 import json
+import math
 import os
 import re
 import urllib.error
@@ -41,9 +42,14 @@ MAX_ATTEMPTS = 3  # how many times one PDF is sent before giving up
 # A printed price: digits, a dot or a comma, two decimals. Dates like 01.10.2026 do not match.
 PRICE_PATTERN = re.compile(r"(?<![\d.,/])\d+[.,]\d{2}(?![\d.,/])")
 
-# Header of the pack size column, compared without case. "Min. ord." is NOT one of them:
-# it is the minimum order (5 pz = order at least five), not how many pieces are in a pack.
-PACK_HEADERS = {"ve", "pack", "pack size", "units/pack", "qty/pack", "pcs/pack", "conf.", "confezione", "pz/conf."}
+# Header of the pack size column, compared without case, "*", brackets and dots (see pack_header).
+# "Min. ord." is NOT one of them: it is the minimum order (5 pz = order at least five), not how many
+# pieces are in a pack. "qty", "stk" and "unit" stay out too: they can mean something else.
+PACK_HEADERS = {
+    "ve", "vpe", "verpackungseinheit", "packung", "inhalt",
+    "pack", "pack size", "pack qty", "units/pack", "qty/pack", "pcs/pack", "per pack",
+    "conf", "confezione", "pz/conf",
+}
 # A pack written on the row itself, in a list without a pack column: "pack of 4", "conf. da 6".
 PACK_ON_ROW = re.compile(r"(?:pack of|box of|conf\.? da|confezione da)\s*(\d+)", re.IGNORECASE)
 # The cells of a row in the PDF text: pieces of text separated by two or more spaces.
@@ -215,6 +221,11 @@ def cells(text: str) -> list[tuple[float, str]]:
     return [((m.start() + m.end()) / 2, m.group()) for m in CELL_PATTERN.finditer(text)]
 
 
+def pack_header(cell: str) -> bool:
+    """True if the cell is the header of a pack column: "VE", "VE (Stk.)", "Conf.", "VPE*" ..."""
+    return re.sub(r"\s*\(.*\)|[*.]", "", cell.lower()).strip() in PACK_HEADERS
+
+
 def pack_column_headers(text_rows: list[tuple[int, int, str]]) -> dict[tuple[int, int], list[tuple[float, str]]]:
     """The header rows that have a pack column, by (page, row): their cells.
 
@@ -225,7 +236,7 @@ def pack_column_headers(text_rows: list[tuple[int, int, str]]) -> dict[tuple[int
         if PRICE_PATTERN.search(text):
             continue
         row_cells = cells(text)
-        if any(cell.lower() in PACK_HEADERS for _, cell in row_cells):
+        if any(pack_header(cell) for _, cell in row_cells):
             headers[(page, row_number)] = row_cells
     return headers
 
@@ -234,14 +245,16 @@ def printed_pack(text: str, header_cells: list[tuple[float, str]]) -> int | None
     """The number printed under the pack column of this row, None if there is none.
 
     Every cell of the row goes to the header whose centre is nearest; the pack column must get one number.
+    Only cells made of digits count: a description that ends up nearer to the pack column (a header on
+    two rows, a long text) does not hide the number, while two numbers under it are still a problem.
     """
-    pack_centre = next(centre for centre, cell in header_cells if cell.lower() in PACK_HEADERS)
+    pack_centre = next(centre for centre, cell in header_cells if pack_header(cell))
     under_pack = []
     for centre, cell in cells(text):
         nearest = min(header_cells, key=lambda header: abs(header[0] - centre))
-        if nearest[0] == pack_centre:
+        if nearest[0] == pack_centre and re.fullmatch(r"\d+", cell):
             under_pack.append(cell)
-    if len(under_pack) != 1 or not re.fullmatch(r"\d+", under_pack[0]):
+    if len(under_pack) != 1:
         return None
     return int(under_pack[0])
 
@@ -258,7 +271,7 @@ def check_pack(item: dict, page: int, row_number: int, text: str, headers: dict)
         pack = float(item.get("pack_size"))
     except (TypeError, ValueError):
         return f"{code}: pack size {item.get('pack_size')!r} is not a number"
-    if pack != int(pack) or pack < 1:
+    if not math.isfinite(pack) or pack != int(pack) or pack < 1:
         return f"{code}: pack size {item.get('pack_size')!r} is not a whole number of pieces"
     item["pack_size"] = int(pack)
 
