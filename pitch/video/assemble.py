@@ -31,7 +31,9 @@ KEEP_SHORT = {0, 1, 2, 5, 6, 7, 8, 15, 16, 17}  # segments of the short cut: no 
 FADE = 0.4
 VOICE = WORK / "voice"
 LEAD, TAIL = 0.5, 0.8  # seconds of segment before and after its line
-MUSIC_UNDER_VOICE = 0.09  # music volume when there is a narration (0.8 without)
+MUSIC_UNDER_VOICE = 0.15  # music volume in the pauses of the narration (0.8 without narration)
+# while the voice speaks the music ducks under it (sidechain), and comes back up in the pauses
+DUCK = "sidechaincompress=threshold=0.01:ratio=8:attack=30:release=600"
 SPEEDUP = 20  # the wait for the photo reading, shown this many times faster
 
 
@@ -138,7 +140,8 @@ def main():
     if VOICE.exists():
         narration = voice_track(parts)
         run("-i", str(joined), "-stream_loop", "-1", "-i", str(MUSIC), "-i", str(narration),
-            "-filter_complex", f"{music},volume={MUSIC_UNDER_VOICE}[m];[2:a]volume=1.0[v];[m][v]amix=inputs=2:duration=first:normalize=0[a]",
+            "-filter_complex", f"{music},volume={MUSIC_UNDER_VOICE}[m];[2:a]volume=1.0,asplit[v][key];[m][key]{DUCK}[d];"
+                               f"[d][v]amix=inputs=2:duration=first:normalize=0[a]",
             "-map", "0:v", "-map", "[a]", "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-shortest", str(OUT))
     else:
         run("-i", str(joined), "-stream_loop", "-1", "-i", str(MUSIC), "-filter_complex", f"{music},volume=0.8[a]",
