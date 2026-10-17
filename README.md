@@ -78,8 +78,8 @@ number on screen comes with its calculation. On top of that, five guards, all pl
 
 1. **Every PDF reading is checked against the PDF** (`mg/extract/pdf.py`). Code extracts the text of
    the PDF on its own: every price the model read must be printed on its row, the pack size must be
-   the number under the pack column (1 if the list has none; "Min. ord." is a minimum order, not a
-   pack), no priced row may be left out, no code may be invented. A failed check means a new reading; after three failures the
+   the number under the pack column (an empty cell is 1; if the list has no pack column, 1 or the
+   pack written on the row, "pack of 2"; "Min. ord." is a minimum order, not a pack), no priced row may be left out, no code may be invented. A failed check means a new reading; after three failures the
    price list is refused. During development the model once read 24.90 where the list said 9.90:
    this check stopped it, and a test replays that case (`tests/test_extract.py`).
 2. **A footnote number is kept only if it is written in the footnote** (`mg/extract/pdf.py`,
@@ -140,7 +140,11 @@ this run.
 
 - **The minimum order is not checked against the document**, and on a photo neither is the pack
   size. In a PDF the guard checks prices, missing rows and the pack size (the number under the pack
-  column, or 1 if the list has none). The person sees the highlighted source row.
+  column, or 1 if the list has none, or the pack written on the row). The person sees the highlighted
+  source row.
+- **The pack column is recognised by its name** (`VE`, `VPE`, `Pack`, `Pack Qty`, `Conf.` and a few
+  more, in `mg/extract/pdf.py`). A list whose pack column has a name not on that list, with packs
+  other than 1, is refused: a false alarm, never a wrong pack let through.
 - **On a photo, two readings wrong in the same way would pass.** Agreement is not proof.
 - **A scan with no text layer has nothing to compare with**: the PDF guard needs the text of the PDF.
 - The exchange rate is a fixed demo rate (1 GBP = 1.17 EUR), and the "negotiate" move assumes the

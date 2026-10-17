@@ -50,6 +50,14 @@ PACK_HEADERS = {
     "pack", "pack size", "pack qty", "units/pack", "qty/pack", "pcs/pack", "per pack",
     "conf", "confezione", "pz/conf",
 }
+# Header of the code or description column: a header row without a pack column (a second table, a
+# services section) says that the rows under it have no pack column. Compared like PACK_HEADERS.
+CODE_HEADERS = {
+    "code", "product code", "codice", "articolo", "art-nr", "artnr", "art nr", "artikelnummer",
+    "artikel", "description", "descrizione", "bezeichnung",
+}
+# A cell that names the price column: a header row has three cells or more, or one of these.
+PRICE_HEADER_WORD = re.compile(r"\b(?:price|prezzo|preis|netto|net|eur|gbp|chf|usd)\b", re.IGNORECASE)
 # A pack written on the row itself, in a list without a pack column: "pack of 4", "conf. da 6".
 PACK_ON_ROW = re.compile(r"(?:pack of|box of|conf\.? da|confezione da)\s*(\d+)", re.IGNORECASE)
 # The cells of a row in the PDF text: pieces of text separated by two or more spaces.
@@ -221,39 +229,62 @@ def cells(text: str) -> list[tuple[float, str]]:
     return [((m.start() + m.end()) / 2, m.group()) for m in CELL_PATTERN.finditer(text)]
 
 
+def header_name(cell: str) -> str:
+    """A header cell without case, "*", brackets and dots: "VE (Stk.)" -> "ve", "Art.-Nr." -> "art-nr"."""
+    return re.sub(r"\s*\(.*\)|[*.]", "", cell.lower()).strip()
+
+
 def pack_header(cell: str) -> bool:
     """True if the cell is the header of a pack column: "VE", "VE (Stk.)", "Conf.", "VPE*" ..."""
-    return re.sub(r"\s*\(.*\)|[*.]", "", cell.lower()).strip() in PACK_HEADERS
+    return header_name(cell) in PACK_HEADERS
 
 
-def pack_column_headers(text_rows: list[tuple[int, int, str]]) -> dict[tuple[int, int], list[tuple[float, str]]]:
-    """The header rows that have a pack column, by (page, row): their cells.
+def has_pack_column(header_cells: list[tuple[float, str]]) -> bool:
+    return any(pack_header(cell) for _, cell in header_cells)
 
-    A header row has no price and one of its cells is a pack header (PACK_HEADERS).
+
+def table_headers(text_rows: list[tuple[int, int, str]]) -> dict[tuple[int, int], list[tuple[float, str]]]:
+    """The header rows of the tables, by (page, row): their cells.
+
+    A header row has no price, has three cells or more (or one that names the price, "EUR", "Netto")
+    and one of its cells is a pack header (PACK_HEADERS) or a code header (CODE_HEADERS). The cell
+    count keeps out a section title like "Zubehör  VE  Bags"; the code header lets a second table
+    without a pack column end the pack column of the table above.
     """
     headers = {}
     for page, row_number, text in text_rows:
         if PRICE_PATTERN.search(text):
             continue
         row_cells = cells(text)
-        if any(pack_header(cell) for _, cell in row_cells):
+        if len(row_cells) < 3 and not any(PRICE_HEADER_WORD.search(cell) for _, cell in row_cells):
+            continue
+        if any(pack_header(cell) or header_name(cell) in CODE_HEADERS for _, cell in row_cells):
             headers[(page, row_number)] = row_cells
     return headers
 
 
 def printed_pack(text: str, header_cells: list[tuple[float, str]]) -> int | None:
-    """The number printed under the pack column of this row, None if there is none.
+    """The number printed under the pack column of this row, None if it cannot be told.
 
     Every cell of the row goes to the header whose centre is nearest; the pack column must get one number.
     Only cells made of digits count: a description that ends up nearer to the pack column (a header on
     two rows, a long text) does not hide the number, while two numbers under it are still a problem.
+    An empty pack cell means 1, but only if nothing at all is under the pack column and no cell of the
+    row is a bare number: otherwise the number may have landed in the wrong column, and 1 could let a
+    wrong pack through.
     """
     pack_centre = next(centre for centre, cell in header_cells if pack_header(cell))
+    row_cells = cells(text)
+    anything_under_pack = False
     under_pack = []
-    for centre, cell in cells(text):
+    for centre, cell in row_cells:
         nearest = min(header_cells, key=lambda header: abs(header[0] - centre))
-        if nearest[0] == pack_centre and re.fullmatch(r"\d+", cell):
-            under_pack.append(cell)
+        if nearest[0] == pack_centre:
+            anything_under_pack = True
+            if re.fullmatch(r"\d+", cell):
+                under_pack.append(cell)
+    if not anything_under_pack and not any(re.fullmatch(r"\d+", cell) for _, cell in row_cells):
+        return 1
     if len(under_pack) != 1:
         return None
     return int(under_pack[0])
@@ -262,9 +293,9 @@ def printed_pack(text: str, header_cells: list[tuple[float, str]]) -> int | None
 def check_pack(item: dict, page: int, row_number: int, text: str, headers: dict) -> str | None:
     """Checks the pack size of one extracted line against its row. Returns the problem, None if fine.
 
-    With a pack column above the row (the nearest header on this page, else on an earlier page),
-    the pack size must be the number printed under it. Without one it must be 1, unless the row
-    itself says "pack of N" or similar: then it must be N.
+    If the nearest table header above the row (on this page, else on an earlier page) has a pack
+    column, the pack size must be the number printed under it (an empty cell is 1, see printed_pack).
+    Without one it must be 1, unless the row itself says "pack of N" or similar: then it must be N.
     """
     code = item["supplier_code"]
     try:
@@ -276,7 +307,7 @@ def check_pack(item: dict, page: int, row_number: int, text: str, headers: dict)
     item["pack_size"] = int(pack)
 
     above = [key for key in headers if key < (page, row_number)]
-    if above:
+    if above and has_pack_column(headers[max(above)]):
         printed = printed_pack(text, headers[max(above)])
         if printed is None:
             return f"{code}: no pack size printed under the pack column ({compact(text)})"
@@ -299,7 +330,7 @@ def check_against_pdf(data: dict, text_rows: list[tuple[int, int, str]]) -> list
     """
     problems = []
     used_rows = set()
-    headers = pack_column_headers(text_rows)
+    headers = table_headers(text_rows)
 
     for item in data.get("lines") or []:
         code = item.get("supplier_code") if isinstance(item, dict) else None

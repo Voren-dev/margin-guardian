@@ -249,3 +249,43 @@ def test_a_header_on_two_rows_finds_the_pack():
     assert check_against_pdf({"lines": [{"supplier_code": "TG-1", "price": 4.10, "pack_size": 12}]}, rows) == []
     problems = check_against_pdf({"lines": [{"supplier_code": "TG-1", "price": 4.10, "pack_size": 1}]}, rows)
     assert len(problems) == 1 and "12 is printed" in problems[0]
+
+
+def test_an_empty_pack_cell_is_one_only_if_no_number_is_loose():
+    from mg.extract.pdf import check_against_pdf
+
+    rows = PACK_ROWS + [(1, 13, "     VP-60012             Bottle cage                               Bags                                       4.10")]
+    lines = [{"supplier_code": "VP-60010", "price": 9.90, "pack_size": 1},
+             {"supplier_code": "VP-60011", "price": 4.80, "pack_size": 10}]
+    assert check_against_pdf({"lines": lines + [{"supplier_code": "VP-60012", "price": 4.10, "pack_size": 1}]}, rows) == []
+    problems = check_against_pdf({"lines": lines + [{"supplier_code": "VP-60012", "price": 4.10, "pack_size": 6}]}, rows)
+    assert len(problems) == 1 and "VP-60012" in problems[0] and "1 is printed" in problems[0]
+    # a bare number in the wrong column: the pack cannot be told, so it is not taken as 1
+    rows = PACK_ROWS + [(1, 13, "     VP-60012             Bottle cage                               Bags   12                                  4.10")]
+    problems = check_against_pdf({"lines": lines + [{"supplier_code": "VP-60012", "price": 4.10, "pack_size": 1}]}, rows)
+    assert len(problems) == 1 and "VP-60012" in problems[0]
+
+
+def test_a_second_table_without_pack_column_ends_the_first():
+    from mg.extract.pdf import check_against_pdf
+
+    rows = PACK_ROWS + [
+        (1, 14, "     Art.-Nr.             Service                                                            Netto EUR"),
+        (1, 16, "     VP-90001             Workshop check                                                         25.00"),
+    ]
+    lines = [{"supplier_code": "VP-60010", "price": 9.90, "pack_size": 1},
+             {"supplier_code": "VP-60011", "price": 4.80, "pack_size": 10}]
+    assert check_against_pdf({"lines": lines + [{"supplier_code": "VP-90001", "price": 25.00, "pack_size": 1}]}, rows) == []
+    problems = check_against_pdf({"lines": lines + [{"supplier_code": "VP-90001", "price": 25.00, "pack_size": 5}]}, rows)
+    assert len(problems) == 1 and "no pack column" in problems[0]
+
+
+def test_a_section_title_with_pack_word_is_not_a_header():
+    from mg.extract.pdf import check_against_pdf
+
+    rows = [
+        (1, 1, "     Codice             Articolo                                   Prezzo netto"),
+        (1, 3, "     Zubehör  VE"),
+        (1, 4, "     CC-G401            Manopole ergonomiche con blocco                 € 7,80"),
+    ]
+    assert check_against_pdf({"lines": [{"supplier_code": "CC-G401", "price": 7.80, "pack_size": 1}]}, rows) == []
